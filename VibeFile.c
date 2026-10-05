@@ -27,15 +27,15 @@
  *
  *  HOW THE CODE IS ORGANIZED (read top to bottom)
  *  ----------------------------------------------
- *    1. Constants and data types   (TokenType, Token, Lexer)
- *    2. Keyword table              (words reserved by Maroon)
- *    3. Small helper functions     (peek, advance, ...)
- *    4. Skipping whitespace/comments
- *    5. Scanners                   (identifier, number, character, operator)
+ *    1. Constants and data types   (TokenType, Token, Lexer) Member 1
+ *    2. Keyword table              (words reserved by Maroon) Member 1
+ *    3. Small helper functions     (peek, advance, ...) Member 1
+ *    4. Skipping whitespace/comments                    Member 3
+ *    5. Scanners                   (identifier, number, character, operator) Members 4-7
  *    6. next_token()               (decides which scanner to call)
- *    7. Printing the results
- *    8. Getting input              (keyboard, file, sample)
- *    9. main()                     (menu)
+ *    7. Printing the results       Member 8
+ *    8. Getting input              (keyboard, file, sample) Member 2
+ *    9. main()                     (menu) Member 8
  * ========================================================================== */
 
 #include <stdio.h>
