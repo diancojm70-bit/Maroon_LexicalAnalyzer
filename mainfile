@@ -1,1 +1,247 @@
 //Main file | here the program starts, Check the vibe file for the main rules and division of rules with examples
+//Mem Temp 1
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+/* ---------------------------------------------------------------------------
+ * 1. CONSTANTS AND DATA TYPES
+ * ------------------------------------------------------------------------- */
+
+#define MAX_SOURCE   16384   /* biggest program we can read (characters)      */
+#define MAX_LEXEME   128     /* longest single lexeme we store                */
+#define MAX_MESSAGE  96      /* longest error message                         */
+#define MAX_LINE     512     /* longest line typed at the keyboard            */
+
+/* Every kind of token Maroon can produce. */
+typedef enum {
+    TOK_KEYWORD,      /* when, ifnot, instead, cycle, each, span, in, push, pull */
+    TOK_IDENTIFIER,   /* variable names such as score, _price, User5name         */
+    TOK_INTEGER,      /* whole numbers such as 45                                */
+    TOK_FLOAT,        /* decimal numbers such as 3.9                             */
+    TOK_CHARACTER,    /* one ASCII character in single quotes such as 'T'        */
+    TOK_BOOLEAN,      /* yes or no                                               */
+    TOK_OPERATOR,     /* + - * / % ^ // = == != > < >= <= && || !                */
+    TOK_LPAREN,       /* (                                                       */
+    TOK_RPAREN,       /* )                                                       */
+    TOK_LBRACE,       /* {                                                       */
+    TOK_RBRACE,       /* }                                                       */
+    TOK_SEMICOLON,    /* ;                                                       */
+    TOK_ERROR,        /* anything that breaks Maroon's rules                     */
+    TOK_EOF           /* end of the source code (internal marker)                */
+} TokenType;
+
+/* Printable names, in the SAME ORDER as the enum above. */
+static const char *TOKEN_NAMES[] = {
+    "KEYWORD", "IDENTIFIER", "INTEGER", "FLOAT", "CHARACTER", "BOOLEAN",
+    "OPERATOR", "LPAREN", "RPAREN", "LBRACE", "RBRACE", "SEMICOLON",
+    "ERROR", "EOF"
+};
+
+/* One token = its type + the text it came from + where it was found. */
+typedef struct {
+    TokenType type;
+    char      lexeme[MAX_LEXEME];
+    int       line;                  /* line number (starts at 1)   */
+    int       column;                /* column number (starts at 1) */
+    char      message[MAX_MESSAGE];  /* only used when type == TOK_ERROR */
+} Token;
+
+/* The lexer's "bookmark": the code, where we are, and our line/column. */
+typedef struct {
+    const char *src;    /* the whole source code                    */
+    int         pos;    /* index of the next character to read      */
+    int         line;   /* current line                             */
+    int         column; /* current column                           */
+} Lexer;
+
+/* ---------------------------------------------------------------------------
+ * 2. KEYWORD TABLE  (from Section II-4 of the Maroon proposal)
+ * ------------------------------------------------------------------------- */
+
+static const char *KEYWORDS[] = {
+    "when",    /* if          */
+    "ifnot",   /* elif        */
+    "instead", /* else        */
+    "cycle",   /* while       */
+    "each",    /* for         */
+    "span",    /* range       */
+    "in",      /* iterate     */
+    "push",    /* print       */
+    "pull",    /* input       */
+    NULL       /* NULL marks the end of the list */
+};
+
+/* Returns 1 if 'word' is a Maroon keyword, otherwise 0. */
+static int is_keyword(const char *word)
+{
+    for (int i = 0; KEYWORDS[i] != NULL; i++) {
+        if (strcmp(word, KEYWORDS[i]) == 0) return 1;
+    }
+    return 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * 3. SMALL HELPER FUNCTIONS
+ * ------------------------------------------------------------------------- */
+
+/* Look at the current character WITHOUT moving forward. */
+static char peek(const Lexer *lx)
+{
+    return lx->src[lx->pos];
+}
+
+/* Look 'offset' characters ahead (1 = the next one). Never reads past the end. */
+static char peek_at(const Lexer *lx, int offset)
+{
+    for (int i = 0; i < offset; i++) {
+        if (lx->src[lx->pos + i] == '\0') return '\0';
+    }
+    return lx->src[lx->pos + offset];
+}
+
+/* Take the current character and MOVE forward, keeping line/column correct. */
+static char advance(Lexer *lx)
+{
+    char c = lx->src[lx->pos];
+    if (c == '\0') return c;
+    lx->pos++;
+    if (c == '\n') { lx->line++; lx->column = 1; }
+    else           { lx->column++; }
+    return c;
+}
+
+/* Is this character allowed inside an identifier (after the first one)? */
+static int is_ident_char(char c)
+{
+    return isalnum((unsigned char)c) || c == '_';
+}
+
+/* Fill in a Token in one call (keeps the scanners short and readable). */
+static void make_token(Token *t, TokenType type, const char *lexeme,
+                       int line, int column, const char *message)
+{
+    t->type = type;
+    strncpy(t->lexeme, lexeme, MAX_LEXEME - 1);
+    t->lexeme[MAX_LEXEME - 1] = '\0';
+    t->line = line;
+    t->column = column;
+    strncpy(t->message, message, MAX_MESSAGE - 1);
+    t->message[MAX_MESSAGE - 1] = '\0';
+}
+
+// Reader
+#define MAROON_EXT ".mrn"
+
+static const char *SAMPLE_PROGRAM =
+    "# Sample Maroon program\n"
+    "score = 85;\n"
+    "when (score >= 90) {\n"
+    "    push('A');\n"
+    "} ifnot (score >= 80) {\n"
+    "    push('B');\n"
+    "} ifnot (score >= 75) {\n"
+    "    push('C');\n"
+    "} instead {\n"
+    "    push('F');\n"
+    "}\n";
+
+/* Returns 1 if 'path' ends with .mrn (case-insensitive), otherwise 0. */
+static int has_maroon_extension(const char *path)
+{
+    const char *dot = strrchr(path, '.');
+    size_t ext_len = strlen(MAROON_EXT);
+
+    if (dot == NULL || strlen(dot) != ext_len) return 0;
+    for (size_t i = 0; i < ext_len; i++) {
+        if (tolower((unsigned char)dot[i]) != MAROON_EXT[i]) return 0;
+    }
+    return 1;
+}
+
+/* Cleans up raw text so the Lexer's line/column counting is accurate:
+ *   - removes a UTF-8 BOM (invisible bytes some editors add at the start)
+ *   - turns Windows line endings (\r\n) into plain \n
+ * Returns the new length. */
+static int normalize_source(char *buffer, int len)
+{
+    int start = 0, out = 0;
+
+    if (len >= 3 && (unsigned char)buffer[0] == 0xEF &&
+        (unsigned char)buffer[1] == 0xBB && (unsigned char)buffer[2] == 0xBF)
+        start = 3;
+
+    for (int i = start; i < len; i++) {
+        if (buffer[i] == '\r' && i + 1 < len && buffer[i + 1] == '\n')
+            continue;                       /* drop the \r of a \r\n pair */
+        buffer[out++] = buffer[i];
+    }
+    buffer[out] = '\0';
+    return out;
+}
+
+/* Type code at the keyboard. Finish by typing :end on a line by itself. */
+static int read_from_keyboard(char *buffer)
+{
+    char line[MAX_LINE];
+    int  used = 0;
+
+    printf("\nType your Maroon code below.\n");
+    printf("When you are finished, type  :end  on a line by itself.\n\n");
+
+    buffer[0] = '\0';
+    while (fgets(line, sizeof line, stdin) != NULL) {
+        /* ':end' must be alone on its line (so ':endless' is not a command) */
+        line[strcspn(line, "\r\n")] = '\0';
+        if (strcmp(line, ":end") == 0) break;
+
+        int len = (int)strlen(line);
+        if (used + len + 1 >= MAX_SOURCE - 1) {      /* +1 for the '\n' we add back */
+            printf("Input too long (limit is %d characters). Extra input ignored.\n",
+                   MAX_SOURCE);
+            break;
+        }
+        memcpy(buffer + used, line, len);
+        used += len;
+        buffer[used++] = '\n';
+        buffer[used] = '\0';
+    }
+    return used;
+}
+
+/* Load code from a .mrn file. Returns the number of characters read, or -1. */
+static int read_from_file(const char *path, char *buffer)
+{
+    if (!has_maroon_extension(path)) {
+        printf("\"%s\" is not a Maroon file. Only %s files are accepted.\n",
+               path, MAROON_EXT);
+        return -1;
+    }
+
+    FILE *fp = fopen(path, "rb");   /* binary: we handle line endings ourselves */
+    if (fp == NULL) {
+        printf("Could not open \"%s\". Check the file name and try again.\n", path);
+        return -1;
+    }
+
+    size_t n = fread(buffer, 1, MAX_SOURCE - 1, fp);
+    buffer[n] = '\0';
+
+    int too_long = (fgetc(fp) != EOF);   /* anything left over? then it was cut off */
+    fclose(fp);
+
+    if (n == 0) {
+        printf("\"%s\" is empty. Nothing to analyze.\n", path);
+        return -1;
+    }
+    if (memchr(buffer, '\0', n) != NULL) {   /* a NUL byte inside = not a text file */
+        printf("\"%s\" does not look like a text file.\n", path);
+        return -1;
+    }
+    if (too_long)
+        printf("Warning: file is longer than %d characters; it was cut off.\n",
+               MAX_SOURCE);
+
+    return normalize_source(buffer, (int)n);
+}
