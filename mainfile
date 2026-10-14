@@ -13,18 +13,18 @@
    Stores all reserved words in Maroon
    ===================================== */
 
-Keyword keywords[] = {
-    {"when",     TOKEN_WHEN},
-    {"ifnot",   TOKEN_IFNOT},
-    {"instead",   TOKEN_INSTEAD},
-    {"cycle",  TOKEN_CYCLE},
-    {"each",    TOKEN_EACH},
-    {"span",  TOKEN_SPAN},
-    {"in",     TOKEN_IN},
-    {"push",  TOKEN_PUSH},
-    {"pull",  TOKEN_PULL},
-    {"yes",   TOKEN_YES},
-    {"no",  TOKEN_NO}
+Keyword keywords[] = {//Changed to simplify identification
+    {"when",    TOKEN_KEYWORD},
+    {"ifnot",   TOKEN_KEYWORD},
+    {"instead", TOKEN_KEYWORD},
+    {"cycle",   TOKEN_KEYWORD},
+    {"each",    TOKEN_KEYWORD},
+    {"span",    TOKEN_KEYWORD},
+    {"in",      TOKEN_KEYWORD},
+    {"push",    TOKEN_KEYWORD},
+    {"pull",    TOKEN_KEYWORD},
+    {"yes",     TOKEN_YES},
+    {"no",      TOKEN_NO}
 };
 
 /* Number of keywords in the table */
@@ -144,51 +144,4 @@ static int read_from_file(const char *path, char *buffer)
                MAX_SOURCE);
 
     return normalize_source(buffer, (int)n);
-}
-
-
-// Character Reader
-static void scan_word(Lexer *lx, Token *t, int line, int col)
-{
-    // Temporary buffer to collect the characters of the word being scanned
-    char buf[MAX_LEXEME];
-
-    // Number of characters stored in buf so far
-    int  len = 0;
-
-    // Keep looping as long as the NEXT character can belong to a word
-    // (peek only looks ahead; it does not consume the character)
-    while (is_ident_char(peek(lx))) {
-
-        // Consume the next character and move the lexer forward by one
-        char c = advance(lx);
-
-        // Store the character only if there is still room in the buffer.
-        // The "- 1" reserves one slot for the '\0' terminator.
-        // If the word is too long, the extra characters are consumed
-        // (so the lexer keeps moving) but are not stored.
-        if (len < MAX_LEXEME - 1) buf[len++] = c;
-    }
-
-    // Terminate the buffer with '\0' so it becomes a valid C string
-    buf[len] = '\0';
-
-    // Check if the word is a boolean literal.
-    // strcmp returns 0 when both strings are equal.
-    // In this language, "yes" and "no" are used instead of true/false.
-    if (strcmp(buf, "yes") == 0 || strcmp(buf, "no") == 0)
-        // Create a BOOLEAN token with the word's text and its starting position
-        make_token(t, TOK_BOOLEAN, buf, line, col, "");
-
-    // Otherwise, check if the word is a reserved keyword
-    // (is_keyword likely looks it up in a table of reserved words)
-    else if (is_keyword(buf))
-        // Create a KEYWORD token
-        make_token(t, TOK_KEYWORD, buf, line, col, "");
-
-    // If it is neither a boolean nor a keyword, it must be a
-    // user-defined name (variable, function, etc.)
-    else
-        // Create an IDENTIFIER token
-        make_token(t, TOK_IDENTIFIER, buf, line, col, "");
 }

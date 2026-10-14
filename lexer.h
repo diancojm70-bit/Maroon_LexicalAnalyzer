@@ -15,40 +15,9 @@ typedef enum {
     TOKEN_IDENTIFIER,
 
     /* Arithmetic operators */
-    TOKEN_PLUS,              // +
-    TOKEN_MINUS,             // -
-    TOKEN_MULTIPLY,          // *
-    TOKEN_DIVIDE,            // /
-    TOKEN_MODULO,            // %
-    TOKEN_POWER,             // ^
-    TOKEN_INTEGER_DIVISION,  // //
+    TOKEN_OPERATOR,      //Too Complex, to identify one by one
 
-    /* Assignment operator */
-    TOKEN_ASSIGN,            // =
-
-    /* Relational operators */
-    TOKEN_EQUAL,             // ==
-    TOKEN_NOT_EQUAL,         // !=
-    TOKEN_GREATER,           // >
-    TOKEN_LESS,              // <
-    TOKEN_GREATER_EQUAL,     // >=
-    TOKEN_LESS_EQUAL,        // <=
-
-    /* Logical operators */
-    TOKEN_AND,               // &&
-    TOKEN_OR,                // ||
-    TOKEN_NOT,               // !
-
-    /* Keywords Changed to follow proposal accordingly */
-    TOKEN_WHEN,
-    TOKEN_IFNOT,
-    TOKEN_INSTEAD,
-    TOKEN_CYCLE,
-    TOKEN_EACH,
-    TOKEN_SPAN,
-    TOKEN_IN,
-    TOKEN_PUSH,
-    TOKEN_PULL,
+    TOKEN_KEYWORD,       //Too Complex
 
     /* Boolean values */
     TOKEN_YES,              // TRUE
