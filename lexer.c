@@ -1,4 +1,4 @@
-// lexer.c
+// lexer.c  (transition-table version)
 #include <string.h>
 #include <ctype.h>
 #include "lexer.h"
@@ -24,13 +24,6 @@ static char peek(void)
     return src[pos];
 }
 
-// Look one character ahead (safe: returns '\0' at the end)
-static char peekNext(void)
-{
-    if (src[pos] == '\0') return '\0';
-    return src[pos + 1];
-}
-
 // Consume the current character and update line/column
 static char advance(void)
 {
@@ -38,12 +31,6 @@ static char advance(void)
     if (c == '\n') { line++; col = 1; }
     else           { col++; }
     return c;
-}
-
-// Can this character be part of a word?
-static int is_ident_char(char c)
-{
-    return isalnum((unsigned char)c) || c == '_';
 }
 
 // Build a token and return it
@@ -56,6 +43,102 @@ static Token make_token(TokenType type, const char *text, int tline, int tcol)
     t.line   = tline;
     t.column = tcol;
     return t;
+}
+
+/* =====================================
+   TRANSITION TABLE
+   One DFA recognizes words, integers and floats.
+
+   States:
+     S_START  nothing read yet
+     S_IDENT  inside a word                (accepting)
+     S_INT    inside a whole number        (accepting)
+     S_DOT    read digits then '.'         (NOT accepting, needs a digit next)
+     S_FLOAT  inside the decimal part      (accepting)
+     S_DEAD   no valid move, stop scanning
+
+   Character classes:
+     C_LETTER  a-z A-Z _
+     C_DIGIT   0-9
+     C_DOT     .
+     C_OTHER   anything else (space, ';', '(', end of text, ...)
+   ===================================== */
+typedef enum { S_START, S_IDENT, S_INT, S_DOT, S_FLOAT, S_DEAD,
+               NUM_STATES } State;
+
+typedef enum { C_LETTER, C_DIGIT, C_DOT, C_OTHER,
+               NUM_CLASSES } CharClass;
+
+static const State table[NUM_STATES][NUM_CLASSES] = {
+    /*             LETTER    DIGIT    DOT     OTHER  */
+    /* START */  { S_IDENT,  S_INT,   S_DEAD, S_DEAD },
+    /* IDENT */  { S_IDENT,  S_IDENT, S_DEAD, S_DEAD },
+    /* INT   */  { S_DEAD,   S_INT,   S_DOT,  S_DEAD },
+    /* DOT   */  { S_DEAD,   S_FLOAT, S_DEAD, S_DEAD },
+    /* FLOAT */  { S_DEAD,   S_FLOAT, S_DEAD, S_DEAD },
+    /* DEAD  */  { S_DEAD,   S_DEAD,  S_DEAD, S_DEAD }
+};
+
+// Which column of the table does this character belong to?
+static CharClass classify(char c)
+{
+    if (isalpha((unsigned char)c) || c == '_') return C_LETTER;
+    if (isdigit((unsigned char)c))             return C_DIGIT;
+    if (c == '.')                              return C_DOT;
+    return C_OTHER;
+}
+
+// Is this a state where a complete token can end?
+static int is_accepting(State s)
+{
+    return s == S_IDENT || s == S_INT || s == S_FLOAT;
+}
+
+// Run the DFA from the current position and return the token it finds.
+// It remembers the LAST accepting state it passed, so "3." becomes
+// the integer 3 followed by a separate '.' instead of a broken float.
+static Token run_dfa(void)
+{
+    char  buf[MAX_LINE];
+    int   startLine = line;
+    int   startCol  = col;
+
+    State state      = S_START;
+    State lastAccept = S_DEAD;
+    int   i          = 0;      // how far ahead we have looked
+    int   lastLen    = 0;      // length of the longest valid token so far
+
+    // Walk the table until there is no valid move
+    for (;;) {
+        state = table[state][classify(src[pos + i])];
+        if (state == S_DEAD) break;
+        i++;
+        if (is_accepting(state)) {
+            lastAccept = state;
+            lastLen    = i;
+        }
+    }
+
+    // Safety net: should not happen, but never loop forever
+    if (lastLen == 0) {
+        char c[2] = { advance(), '\0' };
+        return make_token(TOKEN_UNKNOWN, c, startLine, startCol);
+    }
+
+    // Now actually consume the characters of the token
+    int len = (lastLen < MAX_LINE - 1) ? lastLen : MAX_LINE - 1;
+    for (int k = 0; k < lastLen; k++) {
+        char c = advance();
+        if (k < len) buf[k] = c;
+    }
+    buf[len] = '\0';
+
+    // The final state tells us what kind of token it is
+    switch (lastAccept) {
+        case S_INT:   return make_token(TOKEN_INTEGER, buf, startLine, startCol);
+        case S_FLOAT: return make_token(TOKEN_FLOAT,   buf, startLine, startCol);
+        default:      return make_token(checkKeyword(buf), buf, startLine, startCol);
+    }
 }
 
 /* =====================================
@@ -102,68 +185,10 @@ void skipWhitespace(void)
     }
 }
 
-// Scan a word: yes/no, keyword, or identifier
-Token scanWord(void)
-{
-    char buf[MAX_LINE];
-    int  len = 0;
-
-    int startLine = line;
-    int startCol  = col;
-
-    while (is_ident_char(peek())) {
-        char c = advance();
-        if (len < MAX_LINE - 1) buf[len++] = c;
-    }
-    buf[len] = '\0';
-
-    if (strcmp(buf, "yes") == 0 || strcmp(buf, "no") == 0) {
-        if (strcmp(buf, "yes") == 0) {
-            return make_token(TOKEN_YES, buf, startLine, startCol);
-        } else {
-            return make_token(TOKEN_NO, buf, startLine, startCol);
-        }
-    }
-    else if (checkKeyword(buf) == TOKEN_KEYWORD) {
-        return make_token(TOKEN_KEYWORD, buf, startLine, startCol);
-    }
-    else {
-        return make_token(TOKEN_IDENTIFIER, buf, startLine, startCol);
-    }
-}
-
-// Scan a number: 85 is an INTEGER, 3.14 is a FLOAT
-Token scanNumber(void)
-{
-    char buf[MAX_LINE];
-    int  len = 0;
-    int  isFloat = 0;
-
-    int startLine = line;
-    int startCol  = col;
-
-    // Whole-number part
-    while (isdigit((unsigned char)peek())) {
-        char c = advance();
-        if (len < MAX_LINE - 1) buf[len++] = c;
-    }
-
-    // Decimal part: a '.' followed by at least one digit
-    if (peek() == '.' && isdigit((unsigned char)peekNext())) {
-        isFloat = 1;
-        char c = advance();                       // the '.'
-        if (len < MAX_LINE - 1) buf[len++] = c;
-
-        while (isdigit((unsigned char)peek())) {
-            c = advance();
-            if (len < MAX_LINE - 1) buf[len++] = c;
-        }
-    }
-    buf[len] = '\0';
-
-    return make_token(isFloat ? TOKEN_FLOAT : TOKEN_INTEGER,
-                      buf, startLine, startCol);
-}
+// Words and numbers now share the same table-driven DFA.
+// These two keep their old names so lexer.h does not change.
+Token scanWord(void)   { return run_dfa(); }
+Token scanNumber(void) { return run_dfa(); }
 
 // Scan a character literal like 'A'
 Token scanCharacter(void)

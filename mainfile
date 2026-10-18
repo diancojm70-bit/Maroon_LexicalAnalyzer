@@ -23,8 +23,8 @@ Keyword keywords[] = {//Changed to simplify identification
     {"in",      TOKEN_KEYWORD},
     {"push",    TOKEN_KEYWORD},
     {"pull",    TOKEN_KEYWORD},
-    {"yes",     TOKEN_YES},
-    {"no",      TOKEN_NO}
+    {"yes",     TOKEN_KEYWORD},
+    {"no",      TOKEN_KEYWORD}
 };
 
 /* Number of keywords in the table */

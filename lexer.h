@@ -16,12 +16,7 @@ typedef enum {
 
     /* Arithmetic operators */
     TOKEN_OPERATOR,      //Too Complex, to identify one by one
-
     TOKEN_KEYWORD,       //Too Complex
-
-    /* Boolean values */
-    TOKEN_YES,              // TRUE
-    TOKEN_NO,             // FALSE
 
     /* Punctuation and grouping symbols */
     TOKEN_LEFT_PAREN,        // (
