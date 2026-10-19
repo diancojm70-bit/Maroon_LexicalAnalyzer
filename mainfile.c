@@ -145,3 +145,9 @@ static int read_from_file(const char *path, char *buffer)
 
     return normalize_source(buffer, (int)n);
 }
+
+int main(){
+
+    printf("Pinky UP");
+    
+}
