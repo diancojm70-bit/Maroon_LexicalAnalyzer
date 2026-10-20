@@ -7,9 +7,10 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "${fileDirname}/mainfile.c",
+                "${fileDirname}/lexer.c",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "${fileDirname}/mainfile.exe"
             ],
             "options": {
                 "cwd": "C:/msys64/ucrt64/bin"
