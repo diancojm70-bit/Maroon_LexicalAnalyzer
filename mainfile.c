@@ -146,8 +146,92 @@ static int read_from_file(const char *path, char *buffer)
     return normalize_source(buffer, (int)n);
 }
 
-int main(){
-
-    printf("Pinky UP");
-    
+int main(void)
+{
+    static char source[MAX_SOURCE];     /* static: keeps the big buffer off the stack */
+    char choice[MAX_LINE];
+    char path[MAX_LINE];
+ 
+    /* Token names, written the same way as the proposal's token table */
+    static const char *names[] = {
+        [TOKEN_INTEGER]     = "INTEGER",
+        [TOKEN_FLOAT]       = "FLOAT",
+        [TOKEN_CHARACTER]   = "CHARACTER",
+        [TOKEN_IDENTIFIER]  = "IDENTIFIER",
+        [TOKEN_OPERATOR]    = "OPERATOR",
+        [TOKEN_KEYWORD]     = "KEYWORD",
+        [TOKEN_LEFT_PAREN]  = "LPAREN",
+        [TOKEN_RIGHT_PAREN] = "RPAREN",
+        [TOKEN_LEFT_BRACE]  = "LBRACE",
+        [TOKEN_RIGHT_BRACE] = "RBRACE",
+        [TOKEN_SEMICOLON]   = "SEMICOLON",
+        [TOKEN_EOF]         = "EOF",
+        [TOKEN_UNKNOWN]     = "UNKNOWN"
+    };
+ 
+    printf("=== Maroon Lexical Analyzer ===\n");
+ 
+    for (;;) {
+        const char *text = NULL;        /* the code to analyze this round, if any */
+ 
+        printf("\n[1] Type code\n");
+        printf("[2] Load a %s file\n", MAROON_EXT);
+        printf("[3] Run the sample program\n");
+        printf("[4] Quit\n");
+        printf("Choose: ");
+ 
+        if (fgets(choice, sizeof choice, stdin) == NULL) break;   /* end of input */
+ 
+        switch (choice[0]) {
+            case '1':
+                if (read_from_keyboard(source) == 0) printf("Nothing was typed.\n");
+                else                                 text = source;
+                break;
+            case '2':
+                printf("File name: ");
+                if (fgets(path, sizeof path, stdin) == NULL) return 0;
+                path[strcspn(path, "\r\n")] = '\0';
+                if (read_from_file(path, source) >= 0) text = source;
+                break;
+            case '3':
+                printf("\n%s", SAMPLE_PROGRAM);
+                text = SAMPLE_PROGRAM;
+                break;
+            case '4':
+                printf("Goodbye!\n");
+                return 0;
+            default:
+                printf("Please type 1, 2, 3, or 4.\n");
+        }
+ 
+        /* Run the lexer and print every token */
+        if (text != NULL) {
+            int total  = 0;
+            int errors = 0;
+ 
+            initLexer(text);
+ 
+            printf("\n%-5s %-4s  %-11s %s\n", "LINE", "COL", "TOKEN", "LEXEME");
+            printf("---------------------------------------------\n");
+ 
+            for (;;) {
+                Token t = getNextToken();
+                if (t.type == TOKEN_EOF) break;
+ 
+                printf("%-5d %-4d  %-11s %s", t.line, t.column,
+                       names[t.type], t.lexeme);
+                if (t.type == TOKEN_UNKNOWN) {
+                    printf("   <-- not valid Maroon");
+                    errors++;
+                }
+                printf("\n");
+                total++;
+            }
+ 
+            printf("---------------------------------------------\n");
+            printf("%d token(s), %d error(s)\n", total, errors);
+        }
+    }
+ 
+    return 0;
 }
