@@ -1,4 +1,6 @@
-//Main file | here the program starts, Check the vibe file for the main rules and division of rules with examples
+//Main file | here the program starts
+
+//includes necessary libraries
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -8,12 +10,9 @@
 
 #include "lexer.h"
 
-/* =====================================
-   KEYWORD TABLE
-   Stores all reserved words in Maroon
-   ===================================== */
+// Keyword table
 
-Keyword keywords[] = {//Changed to simplify identification
+Keyword keywords[] = {//used to identify per keyword, pero inisa-isa na lang lol
     {"when",    TOKEN_KEYWORD},
     {"ifnot",   TOKEN_KEYWORD},
     {"instead", TOKEN_KEYWORD},
@@ -27,7 +26,7 @@ Keyword keywords[] = {//Changed to simplify identification
     {"no",      TOKEN_KEYWORD}
 };
 
-/* Number of keywords in the table */
+// Size/Number of keywords
 const int keywordCount =
     sizeof(keywords) / sizeof(keywords[0]);
 

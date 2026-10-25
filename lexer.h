@@ -1,82 +1,76 @@
 
 #ifndef LEXER_H
 #define LEXER_H
-/* =====================================
-   1. TOKEN TYPES
-   Labels for the different parts of Maroon code
-   ===================================== */
+//This header files has no logic, but is called by the lexer and the main file
+//Above is a fail-safe declaration of the file itself, these prevents multiple declaration of this file
 
+
+//enum declares named constants/tokens, these tokens are to be used later for flagging inputs in the console
 typedef enum {
 
-    /* Data types and identifiers */
+    // These are the primitive data types
     TOKEN_INTEGER,
     TOKEN_FLOAT,
     TOKEN_CHARACTER,
+
+    // For names
     TOKEN_IDENTIFIER,
 
-    /* Arithmetic operators */
-    TOKEN_OPERATOR,      //Too Complex, to identify one by one
-    TOKEN_KEYWORD,       //Too Complex
+    //Flags operators/symbols
+    TOKEN_OPERATOR,     
 
-    /* Punctuation and grouping symbols */
+    //Flags Keywords, was first made to identify all keywords separately but now flags all indifferently
+    TOKEN_KEYWORD,       
+
+    //identify delimiters
     TOKEN_LEFT_PAREN,        // (
     TOKEN_RIGHT_PAREN,       // )
     TOKEN_LEFT_BRACE,        // {
     TOKEN_RIGHT_BRACE,       // }
     TOKEN_SEMICOLON,         // ;
 
-    /* Special tokens */
-    TOKEN_EOF,               // End of file
-    TOKEN_UNKNOWN            // Unrecognized token
+    //Flags input end, alongside unrecognized names
+    TOKEN_EOF,               
+    TOKEN_UNKNOWN            
 
 } TokenType;
 
+   //Each token will have a defined structure, this will store its type & lexeme, as well as its placement
 
-/* =====================================
-   2. TOKEN STRUCTURE
-   Stores information about each token
-   ===================================== */
-
-typedef struct {
-    TokenType type;
-    char lexeme[100];
-    int line;
-    int column;
+typedef struct { 
+    TokenType type;    //TOKEN_LEFT_PAREN
+    char lexeme[100];  //(
+    int line;          //6
+    int column;        //7
 } Token;
 
 
-/* =====================================
-   3. KEYWORD STRUCTURE
-   Connects a keyword to its token type
-   ===================================== */
+//Keyword labelling, declares and connects a keyword address to its token type
 
-typedef struct {
-    const char *word;
-    TokenType type;
+//Signal a File end, flag unrecognicable input
+typedef struct { //Pairs words to their respectively
+    const char *word; //const declares keyword as read only
+    TokenType type;   
 } Keyword;
 
 
-/* =====================================
-   4. KEYWORD TABLE DECLARATION
-   The actual table is defined in one .c file
-   ===================================== */
+//extern allows declaration of variables/arrays on other files rather than the file itself,
 
-extern Keyword keywords[];
+extern Keyword keywords[]; //defined in main.c
 extern const int keywordCount;
 
+void initLexer(const char *source); //used to signal the start of scanning of source text
+Token getNextToken(void);           //used to take the next token word, numbers & operators never reached this, only identifies keywords against identifiers
+TokenType checkKeyword(const char *word); //classfies all lexemes
 
-/* =====================================
-   5. LEXER FUNCTION DECLARATIONS
-   Shared functions used by the lexer
-   ===================================== */
+/* unused
 
-void initLexer(const char *source);
 void skipWhitespace(void);
 Token scanWord(void);
 Token scanNumber(void);
 Token scanCharacter(void);
 Token scanSymbol(void);
-Token getNextToken(void);
-TokenType checkKeyword(const char *word);
+
+*/
 
 #endif

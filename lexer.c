@@ -1,20 +1,4 @@
-/* lexer.c  (table-driven Maroon lexical analyzer)
-
-   The transition table follows the group's DFA diagram. The states are
-   named Q0 ... Q37, exactly like the circles in the diagram, so any row of
-   the table can be checked against the picture.
-
-   How to read it:
-     1. CharClass  - every character belongs to one class (a table column)
-     2. State      - Q0 ... Q37 from the diagram            (a table row)
-     3. table      - table[state][class] = next state
-     4. accept     - which states can end a token, and what that token is
-     5. getNextToken() - follows the table, remembers the LAST accepting
-                         state (longest match), then builds the token
-
-   Anything the diagram has no arrow for is an error: the offending
-   character becomes one TOKEN_UNKNOWN and scanning continues after it.
-
+/*
    Three small additions that the diagram does not draw (marked EXTRA below):
      - a /// comment that never reaches its closing delimiter is reported
        as one TOKEN_UNKNOWN instead of being read as // followed by /
@@ -23,50 +7,47 @@
        TOKEN_UNKNOWN (state Q38), because an identifier can never begin
        with a digit
 */
-#include <string.h>
-#include "lexer.h"
 
-#define MAX_LINE 256
+//lexer.c is the files function storage for the project, uses a DFA diagram to simulate states, whether a passed lexeme is accepted as a token or not
+#include <string.h> //used to copy and compare text NOT identifying words immediately
+#include "lexer.h" //Bring in the self-made library
+#define MAX_LINE 256 //size of temporary text buffer
 
-/* =====================================
-   LEXER STATE
-   ===================================== */
-static const char *src = NULL;   /* the source code text */
-static int pos  = 0;             /* current position in the text */
-static int line = 1;             /* current line number */
-static int col  = 1;             /* current column number */
+//lexer's memory
 
-/* =====================================
-   HELPERS
-   ===================================== */
+//static to maintain consistency in this file
+static const char *src = NULL;   // the text itself
+static int pos  = 0;             // current position in the text 
+static int line = 1;             // current line number 
+static int col  = 1;             // current column number 
 
-/* Consume the current character and update line/column */
+// Helper
+
+// Consume the current character and updates line/column, if its EOF don't move, if not move forwards
 static char advance(void)
 {
     char c = src[pos];
-    if (c == '\0') return '\0';      /* never move past the end */
+    if (c == '\0') return '\0';         // never move past the end 
     pos++;
-    if (c == '\n') { line++; col = 1; }
-    else           { col++; }
-    return c;
+    if (c == '\n') { line++; col = 1; } //new line restarts column, increments line
+    else           { col++; }           //increments column if there's no new line
+    return c;                           //return character consumed
 }
 
-/* Build a token and return it */
+// Build a token and return it 
 static Token make_token(TokenType type, const char *text, int tline, int tcol)
 {
     Token t;
-    t.type = type;
-    strncpy(t.lexeme, text, sizeof(t.lexeme) - 1);
-    t.lexeme[sizeof(t.lexeme) - 1] = '\0';   /* lexeme holds only 100 chars */
-    t.line   = tline;
-    t.column = tcol;
-    return t;
+    t.type = type;                                   //stores the token type
+    strncpy(t.lexeme, text, sizeof(t.lexeme) - 1);   //copies the lexeme, at most 99 chars
+    t.lexeme[sizeof(t.lexeme) - 1] = '\0';           //stores the null terminator/EOF marker at the edge
+    t.line   = tline;                                //copies start line
+    t.column = tcol;                                 //copies start col
+    return t;                                        //return the finished token
 }
 
-/* =====================================
-   1. CHARACTER CLASSES  (the table columns)
-   One class for every different label on an arrow in the diagram.
-   ===================================== */
+// One class per kind of character the DFA diagram distinguishes (the table's columns)
+// plus extra classes so every other possible byte is also handled
 typedef enum {
     C_LETTER,    /* a-z A-Z _                                  */
     C_DIGIT,     /* 0-9                                        */
@@ -96,15 +77,15 @@ typedef enum {
     C_NEWLINE,   /* line feed                                  */
     C_PRINT,     /* printable ASCII outside the Maroon set     */
     C_OTHER,     /* control characters and non-ASCII bytes     */
-    C_EOF,       /* the end of the text                        */
-    NUM_CLASSES
+    C_EOF,       /* the end of the text,                       */
+    NUM_CLASSES /*class counter*/
 } CharClass;
 
 static CharClass classify(char ch)
 {
-    unsigned char c = (unsigned char)ch;
+    unsigned char c = (unsigned char)ch; //ensure values stay within 0-255
 
-    switch (c) {
+    switch (c) { //a switch case for all single character matching
         case '\0': return C_EOF;
         case '.':  return C_DOT;
         case '\'': return C_QUOTE;
@@ -132,8 +113,8 @@ static CharClass classify(char ch)
                    return C_TABCR;
         case '\n': return C_NEWLINE;
     }
-
-    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_')
+   //handles letters & digits
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') 
         return C_LETTER;
     if (c >= '0' && c <= '9')
         return C_DIGIT;
@@ -142,11 +123,10 @@ static CharClass classify(char ch)
     return C_OTHER;
 }
 
-/* =====================================
-   2. STATES  (the table rows)
-   Numbered exactly like the diagram. Q_DEAD is not drawn: it means
-   "no arrow for this character".
-   ===================================== */
+/*  Q_DEAD is not drawn: it means
+   "no arrow for this character".*/
+
+//the DFA States
 typedef enum {
     Q0,    /* start; loops on whitespace                              */
     Q1,    /* identifier / keyword                                    */
@@ -188,7 +168,7 @@ typedef enum {
     Q37,   /* semicolon             ;                                 */
     Q38,   /* EXTRA: number glued to letters, like 3twobscs (error)   */
     Q_DEAD,
-    NUM_STATES
+    NUM_STATES //state counter
 } State;
 
 /* =====================================
@@ -197,25 +177,26 @@ typedef enum {
    Every cell starts as Q_DEAD; build_table() then adds one rule per
    arrow in the diagram.
    ===================================== */
-static State table[NUM_STATES][NUM_CLASSES];
-static int   table_ready = 0;
+
+static State table[NUM_STATES][NUM_CLASSES]; //creates a transition table using both counters
+static int   table_ready = 0;                //tracks if the the table is already built
 
 static void rule(State from, CharClass on, State to)
 {
-    table[from][on] = to;
+    table[from][on] = to; //rule declaration means when in the first indicated state, and a specific class was given, then proceed to this state
 }
-
 /* "any character" rule; specific rules written after it override it */
 static void rule_all(State from, State to)
 {
     for (int c = 0; c < NUM_CLASSES; c++) table[from][c] = to;
+    //for rule_all declarations within the same state, all inputs remains within this state
 }
 
 static void build_table(void)
 {
     int s, c;
 
-    for (s = 0; s < NUM_STATES; s++)
+    for (s = 0; s < NUM_STATES; s++)   //defautlts all transitions to dead
         for (c = 0; c < NUM_CLASSES; c++)
             table[s][c] = Q_DEAD;
 
@@ -315,6 +296,9 @@ static void build_table(void)
    If the walk stops in one of these, a complete token (or a discard) was
    found. States not listed are not accepting.
    ===================================== */
+//accepting states
+
+//defining the action depending on the state arrvied after the DFA processing
 typedef enum {
     ACT_NONE,         /* not an accepting state                          */
     ACT_SKIP,         /* discard: throw the text away and look again     */
@@ -323,11 +307,13 @@ typedef enum {
     ACT_TOKEN         /* emit a token of the given type                  */
 } Action;
 
+//pairs every action with a token classfication
 typedef struct {
     Action    action;
     TokenType type;
 } Accept;
 
+//pairs every state to their token rules, if the state will be accepted or not
 static const Accept accept[NUM_STATES] = {
     [Q1]  = { ACT_WORD,        TOKEN_IDENTIFIER  },
     [Q2]  = { ACT_TOKEN,       TOKEN_INTEGER     },
@@ -381,15 +367,17 @@ void initLexer(const char *source)
     pos  = 0;
     line = 1;
     col  = 1;
-    if (!table_ready) build_table();
+    if (!table_ready) build_table(); //checks table_ready boolean, if not built, then it will be
 }
 
-/* Look the word up in the keyword table (defined in main.c).
-   Returns the keyword's token type, or TOKEN_IDENTIFIER if not found. */
+// Look the word up in the keyword table (defined in main.c)
+//Returns the keyword's token type, or TOKEN_IDENTIFIER if not found.
+//Uses keyword table in main.c, first declared in lexer.h
+//Scans the words and passses it through the DFA, but difference between keywords and identifiers are done after, here
 TokenType checkKeyword(const char *word)
 {
     for (int i = 0; i < keywordCount; i++) {
-        if (strcmp(word, keywords[i].word) == 0)
+        if (strcmp(word, keywords[i].word) == 0)  
             return keywords[i].type;
     }
     return TOKEN_IDENTIFIER;
@@ -399,7 +387,7 @@ TokenType checkKeyword(const char *word)
    states (comments) are consumed and the loop starts over. */
 Token getNextToken(void)
 {
-    for (;;) {
+    for (;;) { //infinite loop, doesen't stop until TOKEN_EOF is passed
         char  buf[MAX_LINE];
 
         /* q0 loops on whitespace: skip it before a token starts */
@@ -418,7 +406,7 @@ Token getNextToken(void)
         int   lastLen    = 0;      /* length of the longest match so far    */
 
         /* Follow arrows until there is none for the next character */
-        for (;;) {
+        for (;;) {  
             state = table[state][classify(src[pos + i])];
             if (state == Q_DEAD) break;
             i++;
@@ -455,4 +443,5 @@ Token getNextToken(void)
                 return make_token(accept[lastAccept].type, buf, startLine, startCol);
         }
     }
+    //notes: explain all the extra snippets remaining
 }
