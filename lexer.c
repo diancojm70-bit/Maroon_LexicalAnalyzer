@@ -81,7 +81,7 @@ typedef enum {
     NUM_CLASSES /*class counter*/
 } CharClass;
 
-static CharClass classify(char ch)
+static CharClass classify(char ch) //takes single char input to return unique class
 {
     unsigned char c = (unsigned char)ch; //ensure values stay within 0-255
 
@@ -171,12 +171,6 @@ typedef enum {
     NUM_STATES //state counter
 } State;
 
-/* =====================================
-   3. THE TRANSITION TABLE
-   table[state][class] -> next state.
-   Every cell starts as Q_DEAD; build_table() then adds one rule per
-   arrow in the diagram.
-   ===================================== */
 
 static State table[NUM_STATES][NUM_CLASSES]; //creates a transition table using both counters
 static int   table_ready = 0;                //tracks if the the table is already built
