@@ -111,20 +111,19 @@ static int read_from_keyboard(char *buffer)
     return used;
 }
 
-/* Load code from a .mrn file. Returns the number of characters read, or -1. */
-static int read_from_file(const char *path, char *buffer)
+static int read_from_file(const char *path, char *buffer) //reads the file and stores it in the buffer, returns -1 if error, else returns length of the file
 {
-    // DEBUG: Shows exact characters and string length received
-    printf("DEBUG: Raw path = \"%s\" (length: %zu)\n", path, strlen(path)); //testing the raw path and its length
+    // Shows exact characters and string length received HAYS
+    printf("DEBUG: Raw path = \"%s\" (length: %zu)\n", path, strlen(path)); 
 
-    if (!has_maroon_extension(path)) {
+    if (!has_maroon_extension(path)) {                //checks if the file has the correct extension, if not, it will return -1
         printf("\"%s\" is not a Maroon file. Only %s files are accepted.\n",
                path, MAROON_EXT);
         return -1;
     }
 
-    FILE *fp = fopen(path, "rb");   /* binary: we handle line endings ourselves */
-    if (fp == NULL) {
+    FILE *fp = fopen(path, "rb");   
+    if (fp == NULL) {                                 //checks if the file can be opened, if not, it will return -1
         printf("Could not open \"%s\". Check the file name and try again.\n", path);
         return -1;
     }
@@ -132,14 +131,14 @@ static int read_from_file(const char *path, char *buffer)
     size_t n = fread(buffer, 1, MAX_SOURCE - 1, fp);
     buffer[n] = '\0';
 
-    int too_long = (fgetc(fp) != EOF);   /* anything left over? then it was cut off */
+    int too_long = (fgetc(fp) != EOF);               //checks if the file is too long, if so, it will return -1
     fclose(fp);
 
     if (n == 0) {
         printf("\"%s\" is empty. Nothing to analyze.\n", path);
         return -1;
     }
-    if (memchr(buffer, '\0', n) != NULL) {   /* a NUL byte inside = not a text file */
+    if (memchr(buffer, '\0', n) != NULL) {   /* a NUL byte inside = not a text file ? */
         printf("\"%s\" does not look like a text file.\n", path);
         return -1;
     }
@@ -147,7 +146,7 @@ static int read_from_file(const char *path, char *buffer)
         printf("Warning: file is longer than %d characters; it was cut off.\n",
                MAX_SOURCE);
 
-    return normalize_source(buffer, (int)n);
+    return normalize_source(buffer, (int)n); //returns the length of the file after normalization
 }
 
 int main(void)
@@ -158,7 +157,7 @@ int main(void)
  
     char cwd[MAX_LINE];
 if (_getcwd(cwd, sizeof(cwd)) != NULL) {
-    printf("Current Working Directory: %s\n", cwd); //testing the current working directory
+    printf("Current Working Directory: %s\n", cwd); //Display the current working directory GRRRRRRR
 }
 
     static const char *names[] = {
@@ -180,7 +179,7 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
     printf("=== Maroon Lexical Analyzer ===\n");
  
     for (;;) {
-        const char *text = NULL;        // the code to analyze this round, if any 
+        const char *text = NULL;        //pointer to the source code, either typed or read from a file 
  
         printf("\n[1] Type code\n");
         printf("[2] Load a %s file\n", MAROON_EXT);
@@ -190,7 +189,7 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
  
         if (fgets(choice, sizeof choice, stdin) == NULL) break;   //end of input 
  
-        switch (choice[0]) {
+        switch (choice[0]) { 
             case '1':
                 if (read_from_keyboard(source) == 0) printf("Nothing was typed.\n");
                 else                                 text = source;
@@ -212,17 +211,17 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
                 printf("Please type 1, 2, 3, or 4.\n");
         }
  
-        /* Run the lexer and print every token */
+        //Runs thee lexer and print em tokens
         if (text != NULL) {
             int total  = 0;
             int errors = 0;
  
             initLexer(text);
  
-            printf("\n%-5s %-4s  %-11s %s\n", "LINE", "COL", "TOKEN", "LEXEME");
+            printf("\n%-5s %-4s  %-11s %s\n", "LINE", "COL", "TOKEN", "LEXEME"); 
             printf("---------------------------------------------\n");
  
-            for (;;) {
+            for (;;) {  
                 Token t = getNextToken();
                 if (t.type == TOKEN_EOF) break;
  
@@ -239,7 +238,6 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
             printf("---------------------------------------------\n");
             printf("%d token(s), %d error(s)\n", total, errors);
         }
-    }
- 
+    } 
     return 0;
 }
