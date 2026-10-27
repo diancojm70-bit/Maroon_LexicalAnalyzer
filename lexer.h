@@ -4,10 +4,8 @@
 //This header files has no logic, but is called by the lexer and the main file
 //Above is a fail-safe declaration of the file itself, these prevents multiple declaration of this file
 
-
 //enum declares named constants/tokens, these tokens are to be used later for flagging inputs in the console
 typedef enum {
-
     // These are the primitive data types
     TOKEN_INTEGER,
     TOKEN_FLOAT,
@@ -36,7 +34,6 @@ typedef enum {
 } TokenType;
 
    //Each token will have a defined structure, this will store its type & lexeme, as well as its placement
-
 typedef struct { 
     TokenType type;    //TOKEN_LEFT_PAREN
     char lexeme[100];  //(
@@ -46,8 +43,6 @@ typedef struct {
 
 
 //Keyword labelling, declares and connects a keyword address to its token type
-
-
 typedef struct { //Pairs words to their respectively
     const char *word; //const declares keyword as read only
     TokenType type;   
@@ -55,7 +50,6 @@ typedef struct { //Pairs words to their respectively
 
 
 //extern allows declaration of variables/arrays on other files rather than the file itself,
-
 extern Keyword keywords[]; //defined in main.c
 extern const int keywordCount;
 
@@ -64,13 +58,11 @@ Token getNextToken(void);           //used to take the next token word, numbers 
 TokenType checkKeyword(const char *word); //classfies all lexemes
 
 /* unused
-
 void skipWhitespace(void);
 Token scanWord(void);
 Token scanNumber(void);
 Token scanCharacter(void);
 Token scanSymbol(void);
-
 */
 
 #endif

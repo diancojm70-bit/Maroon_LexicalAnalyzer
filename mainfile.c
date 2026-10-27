@@ -5,6 +5,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <direct.h> //for _getcwd() to get the current working directory
+
 #define MAX_SOURCE 10000
 #define MAX_LINE   256
 
@@ -112,6 +114,9 @@ static int read_from_keyboard(char *buffer)
 /* Load code from a .mrn file. Returns the number of characters read, or -1. */
 static int read_from_file(const char *path, char *buffer)
 {
+    // DEBUG: Shows exact characters and string length received
+    printf("DEBUG: Raw path = \"%s\" (length: %zu)\n", path, strlen(path)); //testing the raw path and its length
+
     if (!has_maroon_extension(path)) {
         printf("\"%s\" is not a Maroon file. Only %s files are accepted.\n",
                path, MAROON_EXT);
@@ -147,10 +152,14 @@ static int read_from_file(const char *path, char *buffer)
 
 int main(void)
 {
-    static char source[MAX_SOURCE];     // static: keeps the big buffer off the stack 
-    char choice[MAX_LINE];
-    char path[MAX_LINE];
+    static char source[MAX_SOURCE];     //buffer for the source code, either typed or read from a file
+    char choice[MAX_LINE];             //buffer for the user's menu choice
+    char path[MAX_LINE];               //buffer for the file path
  
+    char cwd[MAX_LINE];
+if (_getcwd(cwd, sizeof(cwd)) != NULL) {
+    printf("Current Working Directory: %s\n", cwd); //testing the current working directory
+}
 
     static const char *names[] = {
         [TOKEN_INTEGER]     = "INTEGER",

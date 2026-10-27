@@ -313,7 +313,7 @@ static const Accept accept[NUM_STATES] = {
     [Q12] = { ACT_COMMENT_ERR, TOKEN_UNKNOWN     },
     [Q13] = { ACT_SKIP,        TOKEN_UNKNOWN     },
 
-    [Q14] = { ACT_SKIP,        TOKEN_UNKNOWN     },   /* EXTRA: comment at the end of the text */
+    [Q14] = { ACT_SKIP,        TOKEN_UNKNOWN     },   // EXTRA
     [Q15] = { ACT_SKIP,        TOKEN_UNKNOWN     },
 
     [Q16] = { ACT_TOKEN,       TOKEN_OPERATOR    },
@@ -366,64 +366,65 @@ TokenType checkKeyword(const char *word)
     return TOKEN_IDENTIFIER;
 }
 
-/* Follow the table from q0 and return the next token. The two discard
-   states (comments) are consumed and the loop starts over. */
-Token getNextToken(void)
+
+Token getNextToken(void)   //returns the next token, or TOKEN_EOF if there is no more text to scan
 {
     for (;;) { //infinite loop, doesen't stop until TOKEN_EOF is passed
         char  buf[MAX_LINE];
 
-        /* q0 loops on whitespace: skip it before a token starts */
+        // q0 loops on whitespace: skip it before a token starts 
         while (table[Q0][classify(src[pos])] == Q0)
             advance();
 
+        //If the next character is the end of the text, return a TOKEN_EOF token
         if (src[pos] == '\0')
             return make_token(TOKEN_EOF, "EOF", line, col);
 
+        // Remember where the token starts, so we can report it in the token struct
         int   startLine = line;
         int   startCol  = col;
 
+        // Follow the table until there is no arrow for the next character, keeping track of the last accepting state and how far ahead we have looked
         State state      = Q0;
         State lastAccept = Q_DEAD;
-        int   i          = 0;      /* how far ahead we have looked          */
-        int   lastLen    = 0;      /* length of the longest match so far    */
+        int   i          = 0;      // how far ahead we have looked
+        int   lastLen    = 0;      // how many characters were consumed to reach the last accepting state
 
-        /* Follow arrows until there is none for the next character */
-        for (;;) {  
-            state = table[state][classify(src[pos + i])];
-            if (state == Q_DEAD) break;
-            i++;
-            if (accept[state].action != ACT_NONE) {
-                lastAccept = state;
-                lastLen    = i;
+        // Follow the table until there is no arrow for the next character, keeping track of the last accepting state and how far ahead we have looked Maximal Munch
+        for (;;) {                                            //infinite loop, doesen't stop until TOKEN_EOF is passed
+            state = table[state][classify(src[pos + i])];     //lookahead, checks the next character in the text, but doesn't consume it yet
+            if (state == Q_DEAD) break;                       //no arrow for the next character, so stop looking ahead
+            i++;                                              //advance the lookahead counter
+            if (accept[state].action != ACT_NONE) {           //if the state reached is an accepting state, then store it as the lastAccept state
+                lastAccept = state;                           //store the last accepting state
+                lastLen    = i;                               //store how many characters were consumed to reach the last accepting state
             }
         }
 
-        /* No double circle was ever reached: this character cannot start
-           a token, so report it as unknown and move on */
-        if (lastLen == 0) {
-            char c[2] = { advance(), '\0' };
-            return make_token(TOKEN_UNKNOWN, c, startLine, startCol);
+        //No double circle was ever reached: this character cannot start a token, so report it as unknown and move on 
+        if (lastLen == 0) {                                              //no accepting state was reached, so the character is not valid
+            char c[2] = { advance(), '\0' };                             //consume the character and store it in a string
+            return make_token(TOKEN_UNKNOWN, c, startLine, startCol);   //return a TOKEN_UNKNOWN token with the character and its position
         }
 
-        /* Consume the characters of the match */
-        int len = (lastLen < MAX_LINE - 1) ? lastLen : MAX_LINE - 1;
-        for (int k = 0; k < lastLen; k++) {
-            char c = advance();
-            if (k < len) buf[k] = c;
+        // Consume the characters of the match 
+        int len = (lastLen < MAX_LINE - 1) ? lastLen : MAX_LINE - 1;    //if the match is longer than the buffer, truncate it
+        for (int k = 0; k < lastLen; k++) {                            //consume the characters of the match, but don't overflow the buffer
+            char c = advance();                                         //consume the character and store it in a string
+            if (k < len) buf[k] = c;                                    //store the character in the buffer, but don't overflow it
         }
-        buf[len] = '\0';
+        buf[len] = '\0';                                                //null terminate the buffer
 
-        /* The accepting state decides what to do with it */
-        switch (accept[lastAccept].action) {
-            case ACT_SKIP:
-                continue;                                   /* look again */
-            case ACT_COMMENT_ERR:
-                return make_token(TOKEN_UNKNOWN, "///", startLine, startCol);
-            case ACT_WORD:
-                return make_token(checkKeyword(buf), buf, startLine, startCol);
-            default:
-                return make_token(accept[lastAccept].type, buf, startLine, startCol);
+        //The accepting state decides what to do with it  
+        switch (accept[lastAccept].action) {                                       //the accepting state decides what to do with it
+            case ACT_SKIP:                                                         //discard the text and look again, so just continue the loop
+                continue;                                                          
+            case ACT_COMMENT_ERR:                                                        //EXTRA: a /// comment that never closed, so return a TOKEN_UNKNOWN token with the comment and its position
+                return make_token(TOKEN_UNKNOWN, "///", startLine, startCol);           
+            case ACT_WORD:                                                               //a word: the keyword table decides the type, so check if it's a keyword or an identifier
+                return make_token(checkKeyword(buf), buf, startLine, startCol);           
+            default:                                                                     //Default action: Bigay si token with its type, lexeme, and position
+                return make_token(accept[lastAccept].type, buf, startLine, startCol);    
         }
     }
     
