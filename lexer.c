@@ -372,7 +372,7 @@ Token getNextToken(void)   //returns the next token, or TOKEN_EOF if there is no
     for (;;) { //infinite loop, doesen't stop until TOKEN_EOF is passed
         char  buf[MAX_LINE];
 
-        // q0 loops on whitespace: skip it before a token starts 
+        // q0 loops on whitespace: skip it before a token starts
         while (table[Q0][classify(src[pos])] == Q0)
             advance();
 
@@ -420,11 +420,11 @@ Token getNextToken(void)   //returns the next token, or TOKEN_EOF if there is no
             case ACT_SKIP:                                                         //discard the text and look again, so just continue the loop
                 continue;                                                          
             case ACT_COMMENT_ERR:                                                        //EXTRA: a /// comment that never closed, so return a TOKEN_UNKNOWN token with the comment and its position
-                return make_token(TOKEN_UNKNOWN, "///", startLine, startCol);           
+                return make_token(TOKEN_UNKNOWN, "///", startLine, startCol);
             case ACT_WORD:                                                               //a word: the keyword table decides the type, so check if it's a keyword or an identifier
-                return make_token(checkKeyword(buf), buf, startLine, startCol);           
+                return make_token(checkKeyword(buf), buf, startLine, startCol);
             default:                                                                     //Default action: Bigay si token with its type, lexeme, and position
-                return make_token(accept[lastAccept].type, buf, startLine, startCol);    
+                return make_token(accept[lastAccept].type, buf, startLine, startCol);
         }
     }
     
