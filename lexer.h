@@ -30,7 +30,7 @@ typedef enum {
     TOKEN_SEMICOLON,         // ;
 
     //Flags input end, alongside unrecognized names
-    TOKEN_EOF,               
+    TOKEN_EOF,         
     TOKEN_UNKNOWN            
 
 } TokenType;
@@ -47,7 +47,7 @@ typedef struct {
 
 //Keyword labelling, declares and connects a keyword address to its token type
 
-//Signal a File end, flag unrecognicable input
+
 typedef struct { //Pairs words to their respectively
     const char *word; //const declares keyword as read only
     TokenType type;   

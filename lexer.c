@@ -49,36 +49,36 @@ static Token make_token(TokenType type, const char *text, int tline, int tcol)
 // One class per kind of character the DFA diagram distinguishes (the table's columns)
 // plus extra classes so every other possible byte is also handled
 typedef enum {
-    C_LETTER,    /* a-z A-Z _                                  */
-    C_DIGIT,     /* 0-9                                        */
-    C_DOT,       /* .                                          */
-    C_QUOTE,     /* '                                          */
-    C_HASH,      /* #                                          */
-    C_SLASH,     /* /                                          */
-    C_BSLASH,    /* backslash                                  */
-    C_EQ,        /* =                                          */
-    C_BANG,      /* !                                          */
-    C_LT,        /* <                                          */
-    C_GT,        /* >                                          */
-    C_AMP,       /* &                                          */
-    C_PIPE,      /* |                                          */
-    C_PLUS,      /* +                                          */
-    C_MINUS,     /* -                                          */
-    C_STAR,      /* *                                          */
-    C_PERCENT,   /* %                                          */
-    C_CARET,     /* ^                                          */
-    C_LPAREN,    /* (                                          */
-    C_RPAREN,    /* )                                          */
-    C_LBRACE,    /* {                                          */
-    C_RBRACE,    /* }                                          */
-    C_SEMI,      /* ;                                          */
-    C_SPACE,     /* the space character                        */
-    C_TABCR,     /* tab and carriage return                    */
-    C_NEWLINE,   /* line feed                                  */
-    C_PRINT,     /* printable ASCII outside the Maroon set     */
-    C_OTHER,     /* control characters and non-ASCII bytes     */
-    C_EOF,       /* the end of the text,                       */
-    NUM_CLASSES /*class counter*/
+    C_LETTER,    // a-z A-Z _
+    C_DIGIT,     // 0-9
+    C_DOT,       // .
+    C_QUOTE,     // '
+    C_HASH,      // #
+    C_SLASH,     // /
+    C_BSLASH,    //backslash
+    C_EQ,        // =
+    C_BANG,      // !
+    C_LT,        // <
+    C_GT,        // >
+    C_AMP,       // &
+    C_PIPE,      // |
+    C_PLUS,      // +
+    C_MINUS,     // -
+    C_STAR,      // *
+    C_PERCENT,   // %
+    C_CARET,     // ^
+    C_LPAREN,    // (
+    C_RPAREN,    // )
+    C_LBRACE,    // {
+    C_RBRACE,    // }
+    C_SEMI,      // ;
+    C_SPACE,     //space
+    C_TABCR,     //tab and CR
+    C_NEWLINE,   // /n
+    C_PRINT,     //printable ASCII
+    C_OTHER,     //non-ASCII / control
+    C_EOF,       //end of text
+    NUM_CLASSES  //class counter
 } CharClass;
 
 static CharClass classify(char ch) //takes single char input to return unique class
@@ -119,55 +119,54 @@ static CharClass classify(char ch) //takes single char input to return unique cl
     if (c >= '0' && c <= '9')
         return C_DIGIT;
     if (c >= 32 && c <= 126)
-        return C_PRINT;          /* printable, but not part of Maroon */
+        return C_PRINT;          //printable, but not part of Maroon 
     return C_OTHER;
 }
 
-/*  Q_DEAD is not drawn: it means
-   "no arrow for this character".*/
+// Q_DEAD is not drawn, no arrow for this character.
 
 //the DFA States
 typedef enum {
-    Q0,    /* start; loops on whitespace                              */
-    Q1,    /* identifier / keyword                                    */
-    Q2,    /* integer                                                 */
-    Q3,    /* digits then "."                                         */
-    Q4,    /* float                                                   */
-    Q5,    /* opening ' of a character                                */
-    Q6,    /* one allowed character read                              */
-    Q7,    /* character                                               */
-    Q8,    /* div                                                     */
-    Q9,    /* integer division                                        */
-    Q10,   /* inside a /// comment                                    */
-    Q11,   /* comment, saw 1 backslash                                */
-    Q12,   /* comment, saw 2 backslashes                              */
-    Q13,   /* discard (comment closed by 3 backslashes)               */
-    Q14,   /* inside a # comment                                      */
-    Q15,   /* discard (# comment ended by newline)                    */
-    Q16,   /* assign                =                                 */
-    Q17,   /* equal to              ==                                */
-    Q18,   /* not                   !                                 */
-    Q19,   /* not equal to          !=                                */
-    Q20,   /* less than             <                                 */
-    Q21,   /* less than or equal    <=                                */
-    Q22,   /* greater than          >                                 */
-    Q23,   /* greater or equal      >=                                */
-    Q24,   /* one &                                                   */
-    Q25,   /* and                   &&                                */
-    Q26,   /* one |                                                   */
-    Q27,   /* or                    ||                                */
-    Q28,   /* add                   +                                 */
-    Q29,   /* sub                   -                                 */
-    Q30,   /* mul                   *                                 */
-    Q31,   /* mod                   %                                 */
-    Q32,   /* exp                   ^                                 */
-    Q33,   /* Lparen                (                                 */
-    Q34,   /* Rparen                )                                 */
-    Q35,   /* Lbrace                {                                 */
-    Q36,   /* Rbrace                }                                 */
-    Q37,   /* semicolon             ;                                 */
-    Q38,   /* EXTRA: number glued to letters, like 3twobscs (error)   */
-    Q_DEAD,
+    Q0,        //start; loops on whitespace
+    Q1,        //identifier / keyword
+    Q2,        //integer
+    Q3,        //digits then "."
+    Q4,        //float
+    Q5,        //opening ' of a character
+    Q6,        //one allowed character read
+    Q7,        //character
+    Q8,        //div /
+    Q9,        //integer division //
+    Q10,       //inside a /// comment
+    Q11,       //comment, saw 1 backslash
+    Q12,       //comment, saw 2 backslashes
+    Q13,       //discard (comment closed by 3 backslashes)
+    Q14,       //inside a # comment
+    Q15,       //discard (# comment ended by newline)
+    Q16,       //assign =
+    Q17,       //equal to ==
+    Q18,       //not !
+    Q19,       //not equal to !=
+    Q20,       //less than <
+    Q21,       //less than or equal <=
+    Q22,       //greater than >
+    Q23,       //greater or equal >=
+    Q24,       //one &
+    Q25,       //and &&
+    Q26,       //one |
+    Q27,       //or ||
+    Q28,       //add +
+    Q29,       //sub -
+    Q30,       //mul *
+    Q31,       //mod %
+    Q32,       //exp ^
+    Q33,       //Lparen (
+    Q34,       //Rparen )
+    Q35,       //Lbrace {
+    Q36,       //Rbrace }
+    Q37,       //semicolon ;
+    Q38,       //error: number glued to letters (e.g., 3twobscs)
+    Q_DEAD,    //dead state
     NUM_STATES //state counter
 } State;
 
@@ -190,15 +189,15 @@ static void build_table(void)
 {
     int s, c;
 
-    for (s = 0; s < NUM_STATES; s++)   //defautlts all transitions to dead
+    for (s = 0; s < NUM_STATES; s++)   // default all transitions to dead
         for (c = 0; c < NUM_CLASSES; c++)
             table[s][c] = Q_DEAD;
 
-    /* ---- q0: the first character picks the path ---- */
-    rule(Q0, C_SPACE,   Q0);        /* whitespace loops on q0 */
+    // q0: initial transitions
+    rule(Q0, C_SPACE,   Q0);   // whitespace loop
     rule(Q0, C_TABCR,   Q0);
     rule(Q0, C_NEWLINE, Q0);
-    rule(Q0, C_LETTER,  Q1);        /* letter or _   */
+    rule(Q0, C_LETTER,  Q1);   // identifier start
     rule(Q0, C_DIGIT,   Q2);
     rule(Q0, C_QUOTE,   Q5);
     rule(Q0, C_SLASH,   Q8);
@@ -220,25 +219,23 @@ static void build_table(void)
     rule(Q0, C_RBRACE,  Q36);
     rule(Q0, C_SEMI,    Q37);
 
-    /* ---- q1: identifier / keyword ---- */
+    // q1: identifier / keyword
     rule(Q1, C_LETTER, Q1);
     rule(Q1, C_DIGIT,  Q1);
 
-    /* ---- q2, q3, q4: integer and float ---- */
+    // q2, q3, q4: integer and float
     rule(Q2, C_DIGIT, Q2);
     rule(Q2, C_DOT,   Q3);
     rule(Q3, C_DIGIT, Q4);
     rule(Q4, C_DIGIT, Q4);
 
-    /* ---- q38 (EXTRA): a number followed by letters, like 3twobscs ---- */
+    // q38: invalid format (e.g., 3twobscs)
     rule(Q2,  C_LETTER, Q38);
     rule(Q4,  C_LETTER, Q38);
     rule(Q38, C_LETTER, Q38);
     rule(Q38, C_DIGIT,  Q38);
 
-    /* ---- q5, q6, q7: character literal 'A' ----
-       "any allowed char" = the Maroon character set (letters, digits, the
-       symbols of the proposal) plus the space, but not the quote itself */
+    // q5, q6, q7: char literal 'A'
     {
         static const CharClass allowed[] = {
             C_LETTER, C_DIGIT, C_DOT, C_HASH, C_SLASH, C_BSLASH, C_EQ,
@@ -251,45 +248,40 @@ static void build_table(void)
     }
     rule(Q6, C_QUOTE, Q7);
 
-    /* ---- q8, q9, q10 ... q13: / and // and the /// comment ---- */
-    rule(Q8, C_SLASH, Q9);          /* //  integer division          */
-    rule(Q9, C_SLASH, Q10);         /* /// opens the comment         */
+    // q8..q13: slash and /// comment
+    rule(Q8, C_SLASH, Q9);          // integer division //
+    rule(Q9, C_SLASH, Q10);         // start /// comment
 
-    rule_all(Q10, Q10);             /* any except \                  */
+    rule_all(Q10, Q10);             // loop body
     rule(Q10, C_BSLASH, Q11);
     rule(Q10, C_EOF,    Q_DEAD);
 
-    rule_all(Q11, Q10);             /* any other char goes back      */
+    rule_all(Q11, Q10);             // saw 1 
     rule(Q11, C_BSLASH, Q12);
     rule(Q11, C_EOF,    Q_DEAD);
 
-    rule_all(Q12, Q10);             /* any other char goes back      */
-    rule(Q12, C_BSLASH, Q13);       /* \\\ closes it                 */
+    rule_all(Q12, Q10);             // saw 2 
+    rule(Q12, C_BSLASH, Q13);       // \\\ closes comment
     rule(Q12, C_EOF,    Q_DEAD);
 
-    /* ---- q14, q15: # comment, discarded at the newline ---- */
-    rule_all(Q14, Q14);             /* any except newline            */
+    // q14, q15: # comment
+    rule_all(Q14, Q14);             // loop until newline
     rule(Q14, C_NEWLINE, Q15);
     rule(Q14, C_EOF,     Q_DEAD);
 
-    /* ---- q16 ... q23: = == ! != < <= > >= ---- */
+    // q16..q23: relational operators
     rule(Q16, C_EQ, Q17);
     rule(Q18, C_EQ, Q19);
     rule(Q20, C_EQ, Q21);
     rule(Q22, C_EQ, Q23);
 
-    /* ---- q24 ... q27: && and || ---- */
+    // q24..q27: logical AND/OR
     rule(Q24, C_AMP,  Q25);
     rule(Q26, C_PIPE, Q27);
 
     table_ready = 1;
 }
 
-/* =====================================
-   4. ACCEPTING STATES  (the double circles)
-   If the walk stops in one of these, a complete token (or a discard) was
-   found. States not listed are not accepting.
-   ===================================== */
 //accepting states
 
 //defining the action depending on the state arrvied after the DFA processing
@@ -350,9 +342,6 @@ static const Accept accept[NUM_STATES] = {
     [Q38] = { ACT_TOKEN,       TOKEN_UNKNOWN     }    /* EXTRA: 3twobscs is an error */
 };
 
-/* =====================================
-   PUBLIC FUNCTIONS
-   ===================================== */
 
 /* Start (or restart) scanning a new source text */
 void initLexer(const char *source)
@@ -437,5 +426,5 @@ Token getNextToken(void)
                 return make_token(accept[lastAccept].type, buf, startLine, startCol);
         }
     }
-    //notes: explain all the extra snippets remaining
+    
 }

@@ -80,7 +80,7 @@ static int normalize_source(char *buffer, int len)
     return out;
 }
 
-/* Type code at the keyboard. Finish by typing :end on a line by itself. */
+// Type code at the keyboard. Finish by typing :end on a line by itself. 
 static int read_from_keyboard(char *buffer)
 {
     char line[MAX_LINE];
@@ -91,12 +91,12 @@ static int read_from_keyboard(char *buffer)
 
     buffer[0] = '\0';
     while (fgets(line, sizeof line, stdin) != NULL) {
-        /* ':end' must be alone on its line (so ':endless' is not a command) */
+        //':end' must be alone on its line (so ':endless' is not a command) 
         line[strcspn(line, "\r\n")] = '\0';
         if (strcmp(line, ":end") == 0) break;
 
         int len = (int)strlen(line);
-        if (used + len + 1 >= MAX_SOURCE - 1) {      /* +1 for the '\n' we add back */
+        if (used + len + 1 >= MAX_SOURCE - 1) {      //+1 for the '\n' we add back
             printf("Input too long (limit is %d characters). Extra input ignored.\n",
                    MAX_SOURCE);
             break;
@@ -147,11 +147,11 @@ static int read_from_file(const char *path, char *buffer)
 
 int main(void)
 {
-    static char source[MAX_SOURCE];     /* static: keeps the big buffer off the stack */
+    static char source[MAX_SOURCE];     // static: keeps the big buffer off the stack 
     char choice[MAX_LINE];
     char path[MAX_LINE];
  
-    /* Token names, written the same way as the proposal's token table */
+
     static const char *names[] = {
         [TOKEN_INTEGER]     = "INTEGER",
         [TOKEN_FLOAT]       = "FLOAT",
@@ -171,7 +171,7 @@ int main(void)
     printf("=== Maroon Lexical Analyzer ===\n");
  
     for (;;) {
-        const char *text = NULL;        /* the code to analyze this round, if any */
+        const char *text = NULL;        // the code to analyze this round, if any 
  
         printf("\n[1] Type code\n");
         printf("[2] Load a %s file\n", MAROON_EXT);
@@ -179,7 +179,7 @@ int main(void)
         printf("[4] Quit\n");
         printf("Choose: ");
  
-        if (fgets(choice, sizeof choice, stdin) == NULL) break;   /* end of input */
+        if (fgets(choice, sizeof choice, stdin) == NULL) break;   //end of input 
  
         switch (choice[0]) {
             case '1':
