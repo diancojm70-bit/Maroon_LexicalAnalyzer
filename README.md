@@ -11,6 +11,10 @@ How to replicate:
 How to run from the terminal:
 1. Traverse to your chosen working directory
 2. The repo has 2 current working files; compile both with
+   
    gcc mainfile.c lexer.c -o mainfile.exe
-3. mainfile.exe should now exist; type .\mainfile.exe
+   
+3. mainfile.exe should now exist; type
+  
+   .\mainfile.exe
 
