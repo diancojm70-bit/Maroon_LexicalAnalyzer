@@ -1,13 +1,3 @@
-/*
-   Three small additions that the diagram does not draw (marked EXTRA below):
-     - a /// comment that never reaches its closing delimiter is reported
-       as one TOKEN_UNKNOWN instead of being read as // followed by /
-     - a # comment on the very last line (no newline after it) is accepted
-     - a number glued to letters, like 3twobscs, is reported as one
-       TOKEN_UNKNOWN (state Q38), because an identifier can never begin
-       with a digit
-*/
-
 //lexer.c is the files function storage for the project, uses a DFA diagram to simulate states, whether a passed lexeme is accepted as a token or not
 #include <string.h> //used to copy and compare text NOT identifying words immediately
 #include "lexer.h" //Bring in the self-made library
@@ -308,13 +298,13 @@ static const Accept accept[NUM_STATES] = {
 
     [Q8]  = { ACT_TOKEN,       TOKEN_OPERATOR    },
     [Q9]  = { ACT_TOKEN,       TOKEN_OPERATOR    },
-    [Q10] = { ACT_COMMENT_ERR, TOKEN_UNKNOWN     },
-    [Q11] = { ACT_COMMENT_ERR, TOKEN_UNKNOWN     },
+    [Q10] = { ACT_COMMENT_ERR, TOKEN_UNKNOWN     },  //EXTRA: a /// comment that never closed, so return a TOKEN_UNKNOWN token with the comment and its position
+    [Q11] = { ACT_COMMENT_ERR, TOKEN_UNKNOWN     },  
     [Q12] = { ACT_COMMENT_ERR, TOKEN_UNKNOWN     },
-    [Q13] = { ACT_SKIP,        TOKEN_UNKNOWN     },
+    [Q13] = { ACT_SKIP,        TOKEN_UNKNOWN     },    //EXTRA: 3 backslashes closes the comment, so discard it
 
-    [Q14] = { ACT_SKIP,        TOKEN_UNKNOWN     },   // EXTRA
-    [Q15] = { ACT_SKIP,        TOKEN_UNKNOWN     },
+    [Q14] = { ACT_SKIP,        TOKEN_UNKNOWN     },   // # comment, discard it
+    [Q15] = { ACT_SKIP,        TOKEN_UNKNOWN     },   
 
     [Q16] = { ACT_TOKEN,       TOKEN_OPERATOR    },
     [Q17] = { ACT_TOKEN,       TOKEN_OPERATOR    },
@@ -339,7 +329,7 @@ static const Accept accept[NUM_STATES] = {
     [Q36] = { ACT_TOKEN,       TOKEN_RIGHT_BRACE },
     [Q37] = { ACT_TOKEN,       TOKEN_SEMICOLON   },
 
-    [Q38] = { ACT_TOKEN,       TOKEN_UNKNOWN     }    /* EXTRA: 3twobscs is an error */
+    [Q38] = { ACT_TOKEN,       TOKEN_UNKNOWN     }    //EXTRA: number glued to letters (e.g., 3twobscs)
 };
 
 

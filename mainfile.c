@@ -7,8 +7,8 @@
 
 #include <direct.h> //for _getcwd() to get the current working directory
 
-#define MAX_SOURCE 10000
-#define MAX_LINE   256
+#define MAX_SOURCE 10000    //maximum length of the source code, either typed or read from a file
+#define MAX_LINE   256      
 
 #include "lexer.h"
 

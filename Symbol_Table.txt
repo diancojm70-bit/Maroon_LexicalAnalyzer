@@ -114,3 +114,16 @@ LINE  COL   TOKEN       LEXEME
 ---------------------------------------------
 7 token(s), 0 error(s)
 
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+1     1     KEYWORD     no 
+1     4     IDENTIFIER  this 
+1     9     IDENTIFIER  is 
+1     12    IDENTIFIER  a 
+1     14    IDENTIFIER  test 
+1     19    IDENTIFIER  maroon 
+1     26    IDENTIFIER  file 
+---------------------------------------------
+7 token(s), 0 error(s)
+
