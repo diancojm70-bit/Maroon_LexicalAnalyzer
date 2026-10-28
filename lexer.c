@@ -178,7 +178,7 @@ static void rule(State from, CharClass on, State to)
 {
     table[from][on] = to; //rule declaration means when in the first indicated state, and a specific class was given, then proceed to this state
 }
-/* "any character" rule; specific rules written after it override it */
+// "any character" rule; specific rules written after it override it 
 static void rule_all(State from, State to)
 {
     for (int c = 0; c < NUM_CLASSES; c++) table[from][c] = to;
@@ -195,7 +195,7 @@ static void build_table(void)
 
     // q0: initial transitions
     rule(Q0, C_SPACE,   Q0);   // whitespace loop
-    rule(Q0, C_TABCR,   Q0);
+    rule(Q0, C_TABCR,   Q0);   
     rule(Q0, C_NEWLINE, Q0);
     rule(Q0, C_LETTER,  Q1);   // identifier start
     rule(Q0, C_DIGIT,   Q2);
@@ -284,7 +284,7 @@ static void build_table(void)
 
 //accepting states
 
-//defining the action depending on the state arrvied after the DFA processing
+//defining the action depending on the state arrived after the DFA processing
 typedef enum {
     ACT_NONE,         /* not an accepting state                          */
     ACT_SKIP,         /* discard: throw the text away and look again     */
@@ -369,11 +369,11 @@ TokenType checkKeyword(const char *word)
 
 Token getNextToken(void)   //returns the next token, or TOKEN_EOF if there is no more text to scan
 {
-    for (;;) { //infinite loop, doesen't stop until TOKEN_EOF is passed
+    for (;;) {                                                  //infinite loop, doesen't stop until TOKEN_EOF is passed
         char  buf[MAX_LINE];
 
-        // q0 loops on whitespace: skip it before a token starts
-        while (table[Q0][classify(src[pos])] == Q0)
+                                                                // q0 loops on whitespace: skip it before a token starts
+        while (table[Q0][classify(src[pos])] == Q0)             // while the next character is whitespace, consume it and move on
             advance();
 
         //If the next character is the end of the text, return a TOKEN_EOF token

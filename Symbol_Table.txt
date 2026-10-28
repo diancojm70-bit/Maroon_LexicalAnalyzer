@@ -1,0 +1,17 @@
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+1     1     KEYWORD     yes 
+2     1     IDENTIFIER  and 
+3     1     KEYWORD     no 
+---------------------------------------------
+3 token(s), 0 error(s)
+
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+1     1     LBRACE      { 
+2     1     RBRACE      } 
+---------------------------------------------
+2 token(s), 0 error(s)
+

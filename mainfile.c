@@ -199,6 +199,7 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
                 if (fgets(path, sizeof path, stdin) == NULL) return 0;
                 path[strcspn(path, "\r\n")] = '\0';
                 if (read_from_file(path, source) >= 0) text = source;
+        
                 break;
             case '3':
                 printf("\n%s", SAMPLE_PROGRAM);
@@ -213,6 +214,14 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
  
         //Runs thee lexer and print em tokens
         if (text != NULL) {
+            
+            FILE *fp = fopen("Symbol_Table.txt", "a");                 //append mode to avoid overwriting previous results
+            if (fp == NULL) {                                         //checks if the file can be opened, if not, it will continue to the next iteration of the loop
+                printf("Could not open Symbol_Table.txt for writing");
+                continue;
+            }
+
+
             int total  = 0;
             int errors = 0;
  
@@ -220,6 +229,9 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
  
             printf("\n%-5s %-4s  %-11s %s\n", "LINE", "COL", "TOKEN", "LEXEME"); 
             printf("---------------------------------------------\n");
+
+            fprintf(fp, "\n%-5s %-4s  %-11s %s\n", "LINE", "COL", "TOKEN", "LEXEME"); //write the header to the file
+            fprintf(fp, "---------------------------------------------\n");
  
             for (;;) {  
                 Token t = getNextToken();
@@ -232,11 +244,26 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
                     errors++;
                 }
                 printf("\n");
+
+                fprintf(fp, "%-5d %-4d  %-11s %s \n", t.line, t.column,      //duplicate the output to the file
+                       names[t.type], t.lexeme);
+                if (t.type == TOKEN_UNKNOWN) {
+                    fprintf(fp, "   <-- not valid Maroon");
+                    errors++;
+                }
+                printf("\n");
+
                 total++;
             }
  
             printf("---------------------------------------------\n");
             printf("%d token(s), %d error(s)\n", total, errors);
+
+            fprintf(fp, "---------------------------------------------\n");      //duplicate the output to the file
+            fprintf(fp, "%d token(s), %d error(s)\n\n", total, errors);
+
+            fclose(fp); // Flush and close file handle
+            printf("Results successfully saved to Symbol_Table.txt\n");
         }
     } 
     return 0;
