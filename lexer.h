@@ -1,4 +1,3 @@
-
 #ifndef LEXER_H
 #define LEXER_H
 //This header files has no logic, but is called by the lexer and the main file
@@ -10,6 +9,7 @@ typedef enum {
     TOKEN_INTEGER,
     TOKEN_FLOAT,
     TOKEN_CHARACTER,
+    TOKEN_BOOLEAN,
 
     // For names
     TOKEN_IDENTIFIER,
@@ -33,7 +33,7 @@ typedef enum {
 
 } TokenType;
 
-   //Each token will have a defined structure, this will store its type & lexeme, as well as its placement
+//Each token will have a defined structure, this will store its type & lexeme, as well as its placement
 typedef struct { 
     TokenType type;    //TOKEN_LEFT_PAREN
     char lexeme[100];  //(
@@ -41,28 +41,9 @@ typedef struct {
     int column;        //7
 } Token;
 
-
-//Keyword labelling, declares and connects a keyword address to its token type
-typedef struct { //Pairs words to their respectively
-    const char *word; //const declares keyword as read only
-    TokenType type;   
-} Keyword;
-
-
-//extern allows declaration of variables/arrays on other files rather than the file itself,
-extern Keyword keywords[]; //defined in main.c
-extern const int keywordCount;
+//Notice: Keyword table has been removed since keywords are now hardcoded natively into the DFA
 
 void initLexer(const char *source); //used to signal the start of scanning of source text
-Token getNextToken(void);           //used to take the next token word, numbers & operators never reached this, only identifies keywords against identifiers
-TokenType checkKeyword(const char *word); //classfies all lexemes
-
-/* unused
-void skipWhitespace(void);
-Token scanWord(void);
-Token scanNumber(void);
-Token scanCharacter(void);
-Token scanSymbol(void);
-*/
+Token getNextToken(void);           //used to take the next token word
 
 #endif

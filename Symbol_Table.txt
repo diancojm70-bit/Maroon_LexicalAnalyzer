@@ -127,3 +127,28 @@ LINE  COL   TOKEN       LEXEME
 ---------------------------------------------
 7 token(s), 0 error(s)
 
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+1     1     (null)      yes 
+---------------------------------------------
+1 token(s), 0 error(s)
+
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+1     1     BOOLEAN     yes 
+2     1     IDENTIFIER  or 
+3     1     BOOLEAN     no 
+---------------------------------------------
+3 token(s), 0 error(s)
+
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+1     1     BOOLEAN     yes 
+2     1     KEYWORD     span 
+3     1     BOOLEAN     no 
+---------------------------------------------
+3 token(s), 0 error(s)
+

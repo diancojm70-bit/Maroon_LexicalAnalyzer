@@ -12,26 +12,6 @@
 
 #include "lexer.h"
 
-// Keyword table
-
-Keyword keywords[] = {//used to identify per keyword, pero inisa-isa na lang lol
-    {"when",    TOKEN_KEYWORD},
-    {"ifnot",   TOKEN_KEYWORD},
-    {"instead", TOKEN_KEYWORD},
-    {"cycle",   TOKEN_KEYWORD},
-    {"each",    TOKEN_KEYWORD},
-    {"span",    TOKEN_KEYWORD},
-    {"in",      TOKEN_KEYWORD},
-    {"push",    TOKEN_KEYWORD},
-    {"pull",    TOKEN_KEYWORD},
-    {"yes",     TOKEN_KEYWORD},
-    {"no",      TOKEN_KEYWORD}
-};
-
-// Size/Number of keywords
-const int keywordCount =
-    sizeof(keywords) / sizeof(keywords[0]);
-
 // Reader
 #define MAROON_EXT ".mrn"
 
@@ -164,6 +144,7 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
         [TOKEN_INTEGER]     = "INTEGER",
         [TOKEN_FLOAT]       = "FLOAT",
         [TOKEN_CHARACTER]   = "CHARACTER",
+        [TOKEN_BOOLEAN]     = "BOOLEAN",
         [TOKEN_IDENTIFIER]  = "IDENTIFIER",
         [TOKEN_OPERATOR]    = "OPERATOR",
         [TOKEN_KEYWORD]     = "KEYWORD",
