@@ -15,3 +15,102 @@ LINE  COL   TOKEN       LEXEME
 ---------------------------------------------
 2 token(s), 0 error(s)
 
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+1     1     KEYWORD     no 
+1     4     IDENTIFIER  this 
+1     9     IDENTIFIER  is 
+1     12    IDENTIFIER  a 
+1     14    IDENTIFIER  test 
+1     19    IDENTIFIER  maroon 
+1     26    IDENTIFIER  file 
+---------------------------------------------
+7 token(s), 0 error(s)
+
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+2     1     IDENTIFIER  score 
+2     7     OPERATOR    = 
+2     9     INTEGER     85 
+2     11    SEMICOLON   ; 
+3     1     KEYWORD     when 
+3     6     LPAREN      ( 
+3     7     IDENTIFIER  score 
+3     13    OPERATOR    >= 
+3     16    INTEGER     90 
+3     18    RPAREN      ) 
+3     20    LBRACE      { 
+4     5     KEYWORD     push 
+4     9     LPAREN      ( 
+4     10    CHARACTER   'A' 
+4     13    RPAREN      ) 
+4     14    SEMICOLON   ; 
+5     1     RBRACE      } 
+5     3     KEYWORD     ifnot 
+5     9     LPAREN      ( 
+5     10    IDENTIFIER  score 
+5     16    OPERATOR    >= 
+5     19    INTEGER     80 
+5     21    RPAREN      ) 
+5     23    LBRACE      { 
+6     5     KEYWORD     push 
+6     9     LPAREN      ( 
+6     10    CHARACTER   'B' 
+6     13    RPAREN      ) 
+6     14    SEMICOLON   ; 
+7     1     RBRACE      } 
+7     3     KEYWORD     ifnot 
+7     9     LPAREN      ( 
+7     10    IDENTIFIER  score 
+7     16    OPERATOR    >= 
+7     19    INTEGER     75 
+7     21    RPAREN      ) 
+7     23    LBRACE      { 
+8     5     KEYWORD     push 
+8     9     LPAREN      ( 
+8     10    CHARACTER   'C' 
+8     13    RPAREN      ) 
+8     14    SEMICOLON   ; 
+9     1     RBRACE      } 
+9     3     KEYWORD     instead 
+9     11    LBRACE      { 
+10    5     KEYWORD     push 
+10    9     LPAREN      ( 
+10    10    CHARACTER   'F' 
+10    13    RPAREN      ) 
+10    14    SEMICOLON   ; 
+11    1     RBRACE      } 
+---------------------------------------------
+51 token(s), 0 error(s)
+
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+1     1     IDENTIFIER  Micahel 
+2     1     KEYWORD     yes 
+3     1     IDENTIFIER  No 
+---------------------------------------------
+3 token(s), 0 error(s)
+
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+1     1     UNKNOWN     3name 
+   <-- not valid Maroon---------------------------------------------
+1 token(s), 2 error(s)
+
+
+LINE  COL   TOKEN       LEXEME
+---------------------------------------------
+1     1     KEYWORD     no 
+1     4     IDENTIFIER  this 
+1     9     IDENTIFIER  is 
+1     12    IDENTIFIER  a 
+1     14    IDENTIFIER  test 
+1     19    IDENTIFIER  maroon 
+1     26    IDENTIFIER  file 
+---------------------------------------------
+7 token(s), 0 error(s)
+
