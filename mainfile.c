@@ -17,7 +17,11 @@
 
 static const char *SAMPLE_PROGRAM =
     "# Sample Maroon program\n"
+    "3twobscs\n"
     "score = 85;\n"
+    "each span in yes no;\n"
+    "3.9\n"
+    "'t'\n"
     "when (score >= 90) {\n"
     "    push('A');\n"
     "} ifnot (score >= 80) {\n"
@@ -26,12 +30,59 @@ static const char *SAMPLE_PROGRAM =
     "    push('C');\n"
     "} instead {\n"
     "    push('F');\n"
-    "}\n";
+    "}\n"
+    
+    "# Grade checker that uses all 11 Maroon keywords\n"
+    "passing = yes;\n"
+    "failing = no;\n"
+    "\n"
+    "initial = pull();\n"
+    "push(initial);\n"
+    "\n"
+    "score = 85;\n"
+    "\n"
+    "when (score >= 90) {\n"
+    "    push('A');\n"
+    "} ifnot (score >= 80) {\n"
+    "    push('B');\n"
+    "} ifnot (score >= 75) {\n"
+    "    push('C');\n"
+    "} instead {\n"
+    "    push('F');\n"
+    "}\n"
+    "\n"
+    "x = 1;\n"
+    "cycle (x <= 5) {\n"
+    "    push(x);\n"
+    "    x = x + 1;\n"
+    "}\n"
+    "\n"
+    "each i in span(3) {\n"
+    "    push(i);\n"
+    "}\n"
+    "\n"
+    "when (passing && !failing) {\n"
+    "    push('P');\n"
+    "}\n"
+    
+    "+-*/%^//\n"
+    "= ==  != > < >= <=\n"
+    "&& || !\n"
+    "45 \n"
+    "3.9\n"
+    "'t'\n"
+    "yes \n"
+    "no\n"
+    "#yes\n"
+    "///\n"
+    "yes\n"
+    "\\\\\\n";
+    ;
 
 /* Returns 1 if 'path' ends with .mrn (case-insensitive), otherwise 0. */
 static int has_maroon_extension(const char *path)
 {
-    const char *dot = strrchr(path, '.');
+    const char *dot = strrchr(path, '.'); 
     size_t ext_len = strlen(MAROON_EXT);
 
     if (dot == NULL || strlen(dot) != ext_len) return 0;
@@ -144,7 +195,6 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
         [TOKEN_INTEGER]     = "INTEGER",
         [TOKEN_FLOAT]       = "FLOAT",
         [TOKEN_CHARACTER]   = "CHARACTER",
-        [TOKEN_BOOLEAN]     = "BOOLEAN",
         [TOKEN_IDENTIFIER]  = "IDENTIFIER",
         [TOKEN_OPERATOR]    = "OPERATOR",
         [TOKEN_KEYWORD]     = "KEYWORD",
@@ -154,7 +204,10 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
         [TOKEN_RIGHT_BRACE] = "RBRACE",
         [TOKEN_SEMICOLON]   = "SEMICOLON",
         [TOKEN_EOF]         = "EOF",
-        [TOKEN_UNKNOWN]     = "UNKNOWN"
+        [TOKEN_UNKNOWN]     = "UNKNOWN",
+        [TOKEN_RESERVED]    = "RESERVED",
+        [TOKEN_NOISE]       = "NOISE",
+        [TOKEN_COMMENT]     = "COMMENT"
     };
  
     printf("=== Maroon Lexical Analyzer ===\n");
@@ -208,17 +261,18 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
  
             initLexer(text);
  
-            printf("\n%-5s %-4s  %-11s %s\n", "LINE", "COL", "TOKEN", "LEXEME"); 
+            printf("\n%-5s %-4s  %-14s %s\n", "LINE", "COL", "TOKEN", "LEXEME"); 
             printf("---------------------------------------------\n");
 
-            fprintf(fp, "\n%-5s %-4s  %-11s %s\n", "LINE", "COL", "TOKEN", "LEXEME"); //write the header to the file
+            fprintf(fp, "\n%-5s %-4s  %-14s %s\n", "LINE", "COL", "TOKEN", "LEXEME");
             fprintf(fp, "---------------------------------------------\n");
  
-            for (;;) {  
+            for (;;) {
                 Token t = getNextToken();
                 if (t.type == TOKEN_EOF) break;
- 
-                printf("%-5d %-4d  %-11s %s", t.line, t.column,
+
+                // console output
+                printf("%-5d %-4d  %-14s %s", t.line, t.column,       //longer strings
                        names[t.type], t.lexeme);
                 if (t.type == TOKEN_UNKNOWN) {
                     printf("   <-- not valid Maroon");
@@ -226,13 +280,12 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
                 }
                 printf("\n");
 
-                fprintf(fp, "%-5d %-4d  %-11s %s \n", t.line, t.column,      //duplicate the output to the file
-                       names[t.type], t.lexeme);
-                if (t.type == TOKEN_UNKNOWN) {
+                // file output
+                fprintf(fp, "%-5d %-4d  %-14s %s", t.line, t.column,
+                        names[t.type], t.lexeme);
+                if (t.type == TOKEN_UNKNOWN)
                     fprintf(fp, "   <-- not valid Maroon");
-                    errors++;
-                }
-                printf("\n");
+                fprintf(fp, "\n");
 
                 total++;
             }

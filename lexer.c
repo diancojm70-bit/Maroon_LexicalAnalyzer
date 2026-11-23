@@ -231,7 +231,7 @@ static void build_table(void)
     // Override specific starting letters to begin keyword paths
     rule(Q0, C_W, K_W1);
     rule(Q0, C_I, K_I1);
-    rule(Q0, C_C, K_C1);
+    rule(Q0, C_C, K_C1);  
     rule(Q0, C_E, K_E1);
     rule(Q0, C_S, K_S1);
     rule(Q0, C_P, K_P1);
@@ -242,7 +242,7 @@ static void build_table(void)
     rule(Q0, C_QUOTE,   Q5);
     rule(Q0, C_SLASH,   Q8);
     rule(Q0, C_HASH,    Q14);
-    rule(Q0, C_EQ,      Q16);
+    rule(Q0, C_EQ,      Q16); 
     rule(Q0, C_BANG,    Q18);
     rule(Q0, C_LT,      Q20);
     rule(Q0, C_GT,      Q22);
@@ -414,10 +414,10 @@ static const Accept accept[NUM_STATES] = {
     [Q10] = { ACT_COMMENT_ERR, TOKEN_UNKNOWN     },  //EXTRA: a /// comment that never closed
     [Q11] = { ACT_COMMENT_ERR, TOKEN_UNKNOWN     },  
     [Q12] = { ACT_COMMENT_ERR, TOKEN_UNKNOWN     },
-    [Q13] = { ACT_SKIP,        TOKEN_UNKNOWN     },  //EXTRA: 3 backslashes closes the comment
+    [Q13] = { ACT_TOKEN,       TOKEN_COMMENT     },  // /// ... \\\ closed comment
 
-    [Q14] = { ACT_SKIP,        TOKEN_UNKNOWN     },  // # comment, discard it
-    [Q15] = { ACT_SKIP,        TOKEN_UNKNOWN     },   
+    [Q14] = { ACT_TOKEN,       TOKEN_COMMENT     },  // # comment (ended by EOF)
+    [Q15] = { ACT_TOKEN,       TOKEN_COMMENT     },  // # comment (ended by newline)   
 
     [Q16] = { ACT_TOKEN,       TOKEN_OPERATOR    },
     [Q17] = { ACT_TOKEN,       TOKEN_OPERATOR    },
@@ -452,7 +452,7 @@ static const Accept accept[NUM_STATES] = {
     [K_I1] = { ACT_TOKEN, TOKEN_IDENTIFIER }, [K_I2] = { ACT_TOKEN, TOKEN_IDENTIFIER }, [K_I3] = { ACT_TOKEN, TOKEN_IDENTIFIER }, [K_I4] = { ACT_TOKEN, TOKEN_IDENTIFIER },
     [K_I5] = { ACT_TOKEN, TOKEN_KEYWORD }, // "ifnot"
     
-    [K_IN1] = { ACT_TOKEN, TOKEN_KEYWORD }, // "in"
+    [K_IN1] = { ACT_TOKEN, TOKEN_NOISE }, // "in"
     [K_IN2] = { ACT_TOKEN, TOKEN_IDENTIFIER }, [K_IN3] = { ACT_TOKEN, TOKEN_IDENTIFIER }, [K_IN4] = { ACT_TOKEN, TOKEN_IDENTIFIER }, [K_IN5] = { ACT_TOKEN, TOKEN_IDENTIFIER },
     [K_IN6] = { ACT_TOKEN, TOKEN_KEYWORD }, // "instead"
     
@@ -472,10 +472,10 @@ static const Accept accept[NUM_STATES] = {
     [K_PUL2]= { ACT_TOKEN, TOKEN_KEYWORD }, // "pull"
     
     [K_Y1] = { ACT_TOKEN, TOKEN_IDENTIFIER }, [K_Y2] = { ACT_TOKEN, TOKEN_IDENTIFIER },
-    [K_Y3] = { ACT_TOKEN, TOKEN_BOOLEAN }, // "yes"
+    [K_Y3] = { ACT_TOKEN, TOKEN_RESERVED }, // "yes"
     
     [K_N1] = { ACT_TOKEN, TOKEN_IDENTIFIER },
-    [K_N2] = { ACT_TOKEN, TOKEN_BOOLEAN }  // "no"
+    [K_N2] = { ACT_TOKEN, TOKEN_RESERVED }  // "no"
 };
 
 
@@ -543,7 +543,14 @@ Token getNextToken(void)   //returns the next token, or TOKEN_EOF if there is no
                 continue;                                                          
             case ACT_COMMENT_ERR:                                                  //EXTRA: a /// comment that never closed, so return a TOKEN_UNKNOWN token with the comment and its position
                 return make_token(TOKEN_UNKNOWN, "///", startLine, startCol);
-            default:                                                               //Default action: Bigay si token with its type natively from the DFA, lexeme, and position
+            default:                                                                                                                
+                 if (accept[lastAccept].type == TOKEN_COMMENT) {                  //if the token is a comment, then return a TOKEN_COMMENT token with the comment and its position
+                    // Show only the comment marker, not its content
+                    if (buf[0] == '#')
+                        return make_token(TOKEN_COMMENT, "#", startLine, startCol);
+                    else
+                        return make_token(TOKEN_COMMENT, "/// \\\\\\", startLine, startCol);
+                }
                 return make_token(accept[lastAccept].type, buf, startLine, startCol);
         }
     }

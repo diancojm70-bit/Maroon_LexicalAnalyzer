@@ -9,7 +9,7 @@ typedef enum {
     TOKEN_INTEGER,
     TOKEN_FLOAT,
     TOKEN_CHARACTER,
-    TOKEN_BOOLEAN,
+    //remove token boolean
 
     // For names
     TOKEN_IDENTIFIER,
@@ -18,7 +18,11 @@ typedef enum {
     TOKEN_OPERATOR,     
 
     //Flags Keywords, was first made to identify all keywords separately but now flags all indifferently
-    TOKEN_KEYWORD,       
+    TOKEN_KEYWORD,
+    
+    TOKEN_RESERVED,         //yes, no
+    TOKEN_NOISE,            //in
+    TOKEN_COMMENT,           // /// ... \\\ closed comment, # comment  
 
     //identify delimiters
     TOKEN_LEFT_PAREN,        // (
