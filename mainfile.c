@@ -5,6 +5,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "parser.h"
+
 #include <direct.h> //for _getcwd() to get the current working directory
 
 #define MAX_SOURCE 10000    //maximum length of the source code, either typed or read from a file
@@ -297,6 +299,7 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
             fprintf(fp, "%d token(s), %d error(s)\n\n", total, errors);
 
             fclose(fp); // Flush and close file handle
+            parseSource(text);
             printf("Results successfully saved to Symbol_Table.txt\n");
         }
     } 
