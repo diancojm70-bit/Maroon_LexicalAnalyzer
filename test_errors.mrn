@@ -1,0 +1,17 @@
+# errors
+x = 5
+y = 3;
+push(x;
+z = ;
+when x > 1 {
+    push('A');
+}
+cycle (x <= 5 {
+    x = x + 1;
+}
+each i in span(3 {
+    push(i);
+}
+a = 1 + ;
+push(a)
+b = 2;

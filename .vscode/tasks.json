@@ -10,7 +10,8 @@
                 "${fileDirname}/mainfile.c",
                 "${fileDirname}/lexer.c",
                 "-o",
-                "${fileDirname}/mainfile.exe"
+                "${fileDirname}/mainfile.exe",
+                "${fileDirname}/parser.c"
             ],
             "options": {
                 "cwd": "C:/msys64/ucrt64/bin"

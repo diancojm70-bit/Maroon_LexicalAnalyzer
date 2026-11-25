@@ -1,0 +1,28 @@
+# valid program
+score = 90;
+name = score;
+flag = yes;
+total = 3 + 2 * 5 / 5 + score;
+grade = 'A';
+msg = 'Hello world';
+x = pull();
+push('Hello');
+push(score);
+push('Total: ' + score);
+when (score >= 90) {
+    push('A');
+} ifnot (score >= 80) {
+    push('B');
+} instead {
+    push('F');
+}
+cycle (x <= 5) {
+    x = x + 1;
+    each i in span(3) {
+        push(i);
+    }
+}
+each j span(2) {
+    push(j);
+}
+when (!flag && (x != 2 || x == 3)) { push(x ^ 2 // 3); }

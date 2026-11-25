@@ -1,0 +1,41 @@
+# test_rubric: one example of every rule in the syntax rubric
+# input
+x = pull();
+# output (string / variable / string + variable)
+push('Hello world');
+push(x);
+push('x is ' + x);
+# assignment (variable / constant / expression)
+y = x;
+z = 10;
+total = 3 + 2 * 5 / 5 + y;
+# condition (when / when-instead / when-ifnot-instead)
+when (x > 1) {
+    push('A');
+}
+when (x > 1) {
+    push('A');
+} instead {
+    push('B');
+}
+when (x >= 90) {
+    push('A');
+} ifnot (x >= 80) {
+    push('B');
+} ifnot (x >= 70) {
+    push('C');
+} instead {
+    push('F');
+}
+# loops (plain / nested)
+cycle (x <= 5) {
+    x = x + 1;
+}
+each i in span(3) {
+    push(i);
+}
+cycle (x <= 5) {
+    each i in span(3) {
+        push(i);
+    }
+}
