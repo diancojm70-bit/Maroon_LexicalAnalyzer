@@ -344,10 +344,12 @@ static void build_table(void)
             C_LETTER, C_DIGIT, C_DOT, C_HASH, C_SLASH, C_BSLASH, C_EQ,
             C_BANG, C_LT, C_GT, C_AMP, C_PIPE, C_PLUS, C_MINUS, C_STAR,
             C_PERCENT, C_CARET, C_LPAREN, C_RPAREN, C_LBRACE, C_RBRACE,
-            C_SEMI, C_SPACE
+            C_SEMI, C_SPACE, C_PRINT
         };
-        for (int i = 0; i < (int)(sizeof allowed / sizeof allowed[0]); i++)
+        for (int i = 0; i < (int)(sizeof allowed / sizeof allowed[0]); i++) {
             rule(Q5, allowed[i], Q6);
+            rule(Q6, allowed[i], Q6);   // keep reading letters, so 'Hello world' is one token
+        }
     }
     rule(Q6, C_QUOTE, Q7);
 
