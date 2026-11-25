@@ -147,7 +147,6 @@ static int read_from_keyboard(char *buffer)
 static int read_from_file(const char *path, char *buffer) //reads the file and stores it in the buffer, returns -1 if error, else returns length of the file
 {
     // Shows exact characters and string length received HAYS
-    printf("DEBUG: Raw path = \"%s\" (length: %zu)\n", path, strlen(path)); 
 
     if (!has_maroon_extension(path)) {                //checks if the file has the correct extension, if not, it will return -1
         printf("\"%s\" is not a Maroon file. Only %s files are accepted.\n",
@@ -299,8 +298,8 @@ if (_getcwd(cwd, sizeof(cwd)) != NULL) {
             fprintf(fp, "%d token(s), %d error(s)\n\n", total, errors);
 
             fclose(fp); // Flush and close file handle
-            parseSource(text);
             printf("Results successfully saved to Symbol_Table.txt\n");
+            parseSource(text);
         }
     } 
     return 0;
