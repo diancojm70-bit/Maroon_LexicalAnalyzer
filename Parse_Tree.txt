@@ -1,0 +1,14 @@
+
+=== Maroon Syntax Analyzer ===
+Symbol table loaded: 64 token(s). The parser reads them one at a time.
+Syntax error on line 2: expected ';' before 'y'
+Syntax error on line 4: expected ')' before ';'
+Syntax error on line 5: expected an expression before ';'
+Syntax error on line 6: expected '(' before 'x'
+Syntax error on line 9: expected ')' before '{'
+Syntax error on line 12: expected ')' before '{'
+Syntax error on line 15: expected an expression before ';'
+Syntax error on line 16: expected ';' before 'b'
+
+Parse tree not generated: 8 syntax error(s) found.
+Error recovery method: panic mode (recovered 8 time(s), parsing continued).
